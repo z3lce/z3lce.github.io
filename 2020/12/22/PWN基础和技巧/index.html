@@ -1,0 +1,962 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PWN基础和技巧 | z3lce学习记录</title><meta name="description" content="#内核基础知识  内存空间分配 Linux中, 进程的内存空间被划分为两个部分----用户空间和内核空间. 用户进程通常情况下, 只能访问用户空间的虚拟地址, 不能访问到内核空间. 每个进程的用户空间都是完全独立、互不相干的，用户进程各自有不同的页表。而内核空间是由内核负责映射，它并不会跟着进程改变，是固定的。 内核空间地址有自己对应的页表，内核的虚拟空间独立于其他程序。 内核空间中，从低地址到高"><meta name="keywords" content="基础"><meta name="author" content="z3lce"><meta name="copyright" content="z3lce"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://www.infore.top/2020/12/22/PWN%E5%9F%BA%E7%A1%80%E5%92%8C%E6%8A%80%E5%B7%A7/"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//fonts.googleapis.com" crossorigin="crossorigin"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><meta name="360-site-verification" content="{&quot;theme_color&quot;:{&quot;enable&quot;:true,&quot;main&quot;:&quot;#49B1F5&quot;,&quot;paginator&quot;:&quot;#00c4b6&quot;,&quot;button_hover&quot;:&quot;#FF7242&quot;,&quot;text_selection&quot;:&quot;#00c4b6&quot;,&quot;link_color&quot;:&quot;#99a9bf&quot;,&quot;meta_color&quot;:&quot;#858585&quot;,&quot;hr_color&quot;:&quot;#A4D8FA&quot;,&quot;code_foreground&quot;:&quot;#F47466&quot;,&quot;code_background&quot;:&quot;rgba(27, 31, 35, .05)&quot;,&quot;toc_color&quot;:&quot;#00c4b6&quot;,&quot;blockquote_padding_color&quot;:&quot;#49b1f5&quot;,&quot;blockquote_background_color&quot;:&quot;#49b1f5&quot;}}"/><meta property="og:type" content="article"><meta property="og:title" content="PWN基础和技巧"><meta property="og:url" content="http://www.infore.top/2020/12/22/PWN%E5%9F%BA%E7%A1%80%E5%92%8C%E6%8A%80%E5%B7%A7/"><meta property="og:site_name" content="z3lce学习记录"><meta property="og:description" content="#内核基础知识  内存空间分配 Linux中, 进程的内存空间被划分为两个部分----用户空间和内核空间. 用户进程通常情况下, 只能访问用户空间的虚拟地址, 不能访问到内核空间. 每个进程的用户空间都是完全独立、互不相干的，用户进程各自有不同的页表。而内核空间是由内核负责映射，它并不会跟着进程改变，是固定的。 内核空间地址有自己对应的页表，内核的虚拟空间独立于其他程序。 内核空间中，从低地址到高"><meta property="og:image" content="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/20200719093802.png"><meta property="article:published_time" content="2020-12-22T02:58:46.000Z"><meta property="article:modified_time" content="2020-12-22T02:58:46.000Z"><meta name="twitter:card" content="summary"><script>var activateDarkMode = function () {
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null) {
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', '#000')
+  }
+}
+var activateLightMode = function () {
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null) {
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', '#fff')
+  }
+}
+
+var getCookies = function (name) {
+  const value = `; ${document.cookie}`
+  const parts = value.split(`; ${name}=`)
+  if (parts.length === 2) return parts.pop().split(';').shift()
+}
+
+var autoChangeMode = 'false'
+var t = getCookies('theme')
+if (autoChangeMode === '1') {
+  var isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+  var isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+  var isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+  var hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+  if (t === undefined) {
+    if (isLightMode) activateLightMode()
+    else if (isDarkMode) activateDarkMode()
+    else if (isNotSpecified || hasNoSupport) {
+      console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+      var now = new Date()
+      var hour = now.getHours()
+      var isNight = hour <= 6 || hour >= 18
+      isNight ? activateDarkMode() : activateLightMode()
+    }
+    window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+      if (Cookies.get('theme') === undefined) {
+        e.matches ? activateDarkMode() : activateLightMode()
+      }
+    })
+  } else if (t === 'light') activateLightMode()
+  else activateDarkMode()
+} else if (autoChangeMode === '2') {
+  now = new Date()
+  hour = now.getHours()
+  isNight = hour <= 6 || hour >= 18
+  if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode()
+} else {
+  if (t === 'dark') activateDarkMode()
+  else if (t === 'light') activateLightMode()
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css"><link rel="next" title="安全值守服务and日志分析" href="http://www.infore.top/2020/12/04/%E5%AE%89%E5%85%A8%E5%80%BC%E5%AE%88%E6%9C%8D%E5%8A%A1and%E6%97%A5%E5%BF%97%E5%88%86%E6%9E%90/"><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web&amp;display=swap"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容:${query}"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  runtime: true,
+  copyright: {"languages":{"author":"作者: z3lce","link":"链接: ","source":"来源: z3lce学习记录","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  ClickShowText: undefined,
+  medium_zoom: false,
+  fancybox: true,
+  Snackbar: {"bookmark":{"message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#121212","position":"bottom-left"},
+  justifiedGallery: {
+    js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+    css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+  },
+  baiduPush: false,
+  highlightCopy: true,
+  highlightLang: true,
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isanchor: false    
+}</script><script>var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isSidebar: true
+  }</script><noscript><style>
+#nav {
+  opacity: 1
+}
+.justified-gallery img{
+  opacity: 1
+}
+</style></noscript><link rel="stylesheet" href="/css/background.css"><meta name="generator" content="Hexo 4.2.1"></head><body><script type="text/javascript" src="/js/crash_cheat.js"></script><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><canvas class="fireworks"></canvas><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="avatar-img" src="/img/avatar.gif" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="mobile_post_data"><div class="mobile_data_item is-center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">14</div></a></div></div><div class="mobile_data_item is-center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">12</div></a></div></div><div class="mobile_data_item is-center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">10</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div></div></div><i class="fas fa-arrow-right on" id="toggle-sidebar"></i><div id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#内存空间分配"><span class="toc-number">1.</span> <span class="toc-text"> 内存空间分配</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#内核空间内存动态申请"><span class="toc-number">1.1.</span> <span class="toc-text"> 内核空间内存动态申请</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#虚拟地址与物理地址关系"><span class="toc-number">1.2.</span> <span class="toc-text"> 虚拟地址与物理地址关系</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ioremap"><span class="toc-number">1.3.</span> <span class="toc-text"> ioremap</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mmap"><span class="toc-number">1.4.</span> <span class="toc-text"> mmap</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#io内存的一般访问方法"><span class="toc-number">1.5.</span> <span class="toc-text"> IO内存的一般访问方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#物理存储空间布局"><span class="toc-number">1.6.</span> <span class="toc-text"> 物理存储空间布局</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#虚拟存储空间布局"><span class="toc-number">1.7.</span> <span class="toc-text"> 虚拟存储空间布局</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#嵌入式系统中如何访问io资源"><span class="toc-number">1.8.</span> <span class="toc-text"> 嵌入式系统中如何访问I&#x2F;O资源</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#物理地址线性地址和虚拟地址对应关系"><span class="toc-number">1.9.</span> <span class="toc-text"> 物理地址,线性地址和虚拟地址对应关系</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#堆基础知识"><span class="toc-number"></span> <span class="toc-text"> 堆基础知识</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#sbrk与mmap"><span class="toc-number">1.</span> <span class="toc-text"> sbrk与mmap</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#example"><span class="toc-number">1.1.</span> <span class="toc-text"> EXAMPLE</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#情况一"><span class="toc-number">1.1.1.</span> <span class="toc-text"> 情况一</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#情况二"><span class="toc-number">1.1.2.</span> <span class="toc-text"> 情况二</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#arena"><span class="toc-number">2.</span> <span class="toc-text"> Arena</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#bins"><span class="toc-number">3.</span> <span class="toc-text"> bins</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#bins分类32位"><span class="toc-number">3.1.</span> <span class="toc-text"> bins分类(32位)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#bin的调用顺序"><span class="toc-number">3.2.</span> <span class="toc-text"> bin的调用顺序</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#chunk"><span class="toc-number">4.</span> <span class="toc-text"> chunk</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#top-chunk"><span class="toc-number">4.1.</span> <span class="toc-text"> TOP chunk</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mmaped-chunk"><span class="toc-number">4.2.</span> <span class="toc-text"> mmaped chunk</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#last-remainder-chunk"><span class="toc-number">4.3.</span> <span class="toc-text"> last remainder chunk</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#fastbin"><span class="toc-number">5.</span> <span class="toc-text"> Fastbin</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#unsorted-bin"><span class="toc-number">6.</span> <span class="toc-text"> unsorted bin</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#small-bins"><span class="toc-number">7.</span> <span class="toc-text"> small bins</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#large-bins"><span class="toc-number">8.</span> <span class="toc-text"> large bins</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#chunk运行模式"><span class="toc-number">8.1.</span> <span class="toc-text"> chunk运行模式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#tcache"><span class="toc-number">9.</span> <span class="toc-text"> tcache</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#原理及机制"><span class="toc-number">9.1.</span> <span class="toc-text"> 原理及机制</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#内存申请"><span class="toc-number">10.</span> <span class="toc-text"> 内存申请</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#没有tcache"><span class="toc-number">10.1.</span> <span class="toc-text"> 没有tcache</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#有tcache之后"><span class="toc-number">10.2.</span> <span class="toc-text"> 有tcache之后</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#内存回收"><span class="toc-number">11.</span> <span class="toc-text"> 内存回收</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#没有tcache-2"><span class="toc-number">11.1.</span> <span class="toc-text"> 没有tcache</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#elf文件解析"><span class="toc-number"></span> <span class="toc-text"> ELF文件解析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#section"><span class="toc-number">1.</span> <span class="toc-text"> Section</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#申请内存的系统调用"><span class="toc-number"></span> <span class="toc-text"> 申请内存的系统调用</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#程序的装载与进程的执行"><span class="toc-number">1.</span> <span class="toc-text"> 程序的装载与进程的执行</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#静态链接程序的执行过程"><span class="toc-number">1.1.</span> <span class="toc-text"> 静态链接程序的执行过程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#动态链接程序的执行过程"><span class="toc-number">1.2.</span> <span class="toc-text"> 动态链接程序的执行过程</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#保护措施"><span class="toc-number"></span> <span class="toc-text"> 保护措施</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1relro"><span class="toc-number">1.</span> <span class="toc-text"> 【1】RELRO：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2stack"><span class="toc-number">2.</span> <span class="toc-text"> 【2】Stack：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3nx"><span class="toc-number">3.</span> <span class="toc-text"> 【3】NX：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4pie"><span class="toc-number">4.</span> <span class="toc-text"> 【4】PIE：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5fortify"><span class="toc-number">5.</span> <span class="toc-text"> 【5】FORTIFY：</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#小技巧"><span class="toc-number"></span> <span class="toc-text"> 小技巧</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#检查保护"><span class="toc-number">1.</span> <span class="toc-text"> 检查保护</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#查找system函数的plt地址"><span class="toc-number">2.</span> <span class="toc-text"> 查找system函数的plt地址</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#查找bin_sh字符串地址"><span class="toc-number">3.</span> <span class="toc-text"> 查找bin_sh字符串地址</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#替换alarm函数"><span class="toc-number">4.</span> <span class="toc-text"> 替换alarm函数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#environ泄露栈地址"><span class="toc-number">5.</span> <span class="toc-text"> environ泄露栈地址</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#查看chunk信息"><span class="toc-number">6.</span> <span class="toc-text"> 查看chunk信息</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#libc利用思路"><span class="toc-number"></span> <span class="toc-text"> libc利用思路</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#uaf"><span class="toc-number"></span> <span class="toc-text"> UAF</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#fastbin-corruption"><span class="toc-number"></span> <span class="toc-text"> Fastbin Corruption</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#fastbin-2"><span class="toc-number">1.</span> <span class="toc-text"> Fastbin</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#fastbin-sanity-check检查机制"><span class="toc-number">1.1.</span> <span class="toc-text"> Fastbin Sanity Check(检查机制)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#fastbin-corruption-2"><span class="toc-number">2.</span> <span class="toc-text"> Fastbin Corruption</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#fastbin-double-free"><span class="toc-number"></span> <span class="toc-text"> Fastbin Double free</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#heap-overflow"><span class="toc-number"></span> <span class="toc-text"> Heap Overflow</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#fastbin-house-of-spirit"><span class="toc-number"></span> <span class="toc-text"> Fastbin House of spirit</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#unlink-exploitation"><span class="toc-number"></span> <span class="toc-text"> Unlink Exploitation</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#伪造arena"><span class="toc-number"></span> <span class="toc-text"> 伪造Arena</span></a></div></div></div><div id="body-wrap"><div id="web_bg" data-type="color"></div><header class="post-bg" id="page-header" style="background-image: url(https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/20200719093802.png)"><nav id="nav"><span class="pull-left" id="blog_name"><a class="blog_title" id="site-name" href="/">z3lce学习记录</a></span><span class="pull-right menus"><div id="search_button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div><span class="toggle-menu close"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></span></span></nav><div id="post-info"><div id="post-title"><div class="posttitle">PWN基础和技巧</div></div><div id="post-meta"><div class="meta-firstline"><time class="post-meta__date"><span class="post-meta__date-created" title="发表于 2020-12-22 10:58:46"><i class="far fa-calendar-alt fa-fw"></i> 发表于 2020-12-22</span><span class="post-meta__separator">|</span><span class="post-meta__date-updated" title="更新于 2020-12-22 10:58:46"><i class="fas fa-history fa-fw"></i> 更新于 2020-12-22</span></time><span class="post-meta__categories"><span class="post-meta__separator">|</span><i class="fas fa-inbox fa-fw post-meta__icon"></i><a class="post-meta__categories" href="/categories/PWN/">PWN</a></span></div><div class="meta-secondline"> <span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta__icon"></i><span>字数总计:</span><span class="word-count">15.9k</span><span class="post-meta__separator">|</span><i class="far fa-clock fa-fw post-meta__icon"></i><span>阅读时长: 54 分钟</span></span></div><div class="meta-thirdline"><span class="post-meta-pv-cv"><span class="post-meta__separator">|</span><i class="far fa-eye fa-fw post-meta__icon"></i><span>阅读量:</span><span id="busuanzi_value_page_pv"></span></span><span class="post-meta-commentcount"></span></div></div></div></header><main class="layout_post" id="content-inner"><article id="post"><div class="post-content" id="article-container"><p>#内核基础知识</p>
+<h2 id="内存空间分配"><a class="markdownIt-Anchor" href="#内存空间分配"></a> 内存空间分配</h2>
+<p>Linux中, 进程的内存空间被划分为两个部分----用户空间和内核空间. 用户进程通常情况下, 只能访问用户空间的虚拟地址, 不能访问到内核空间.</p>
+<p>每个进程的用户空间都是完全独立、互不相干的，用户进程各自有不同的页表。而内核空间是由内核负责映射，它并不会跟着进程改变，是固定的。</p>
+<p>内核空间地址有自己对应的页表，内核的虚拟空间独立于其他程序。</p>
+<p>内核空间中，从低地址到高地址依次为：系统物理内存映射区—隔离带—vmalloc虚拟内存分配区—隔离带—高端内存映射区—专用页面映射区—保留区。<img src= "/img/loading.gif" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/1251780-20180317152942463-1195210397.png" alt="img" /></p>
+<h3 id="内核空间内存动态申请"><a class="markdownIt-Anchor" href="#内核空间内存动态申请"></a> 内核空间内存动态申请</h3>
+<p>主要包括三个函数：kmalloc(), __get_free_pages, vmalloc</p>
+<p>➣kmalloc(), __get_free_pages申请的内存位于物理地址映射区，而且在物理上也是连续的，<strong>返回的虚拟地址</strong>与<strong>真实的物理地址（物理地址是连续的，虚拟地址也是连续的）<strong>只有一个</strong>固定的偏移</strong>，因此存在较简单的转换关系。</p>
+<p>➣而vmalloc申请的内存位于vmalloc虚拟内存分配区（这些区都是以线性地址为度量），它在<strong>虚拟内存空间给出一块连续的内存区</strong>，实质上，这片连续的<strong>虚拟内存在物理内存中并不一定连续</strong>，而vmalloc申请的<strong>虚拟内存和物理内存之间</strong>也<mark>没有</mark><strong>简单的换算关系</strong>。因为vmalloc申请的在虚拟内存空间连续的内存区在物理内存中并不一定连续，可以想象为了完成vmalloc，新的页表需要被建立，因此，调用vmalloc来分配少量内存是不妥的。一般来讲，kmalloc用来分配小于128K的内存，而<strong>更大的内存</strong>块需要用<strong>vmalloc来实现</strong>。</p>
+<h3 id="虚拟地址与物理地址关系"><a class="markdownIt-Anchor" href="#虚拟地址与物理地址关系"></a> 虚拟地址与物理地址关系</h3>
+<p>对于内核物理内存映射区的虚拟内存（用kmalloc(), __get_free_pages申请的），使用virt_to_phys()和phys_to_virt()来实现物理地址和内核虚拟地址之间的互相转换。它实际上，仅仅做了3G的地址移位。<strong>上述方法适用于常规内存（内核物理内存映射区）</strong>，高端内存的虚拟地址与物理地址之间不存在如此简单的换算关系。因为它涉及到了分离物理页的页表控制机制</p>
+<h3 id="ioremap"><a class="markdownIt-Anchor" href="#ioremap"></a> ioremap</h3>
+<p>在ARM中，设备的寄存器或者存储块的这部分空间<strong>属于内存空间的一部分</strong>，我们称之为IO内存。<strong>在内核中访问IO内存之前，我们只有IO内存的物理地址，这样是无法通过软件直接访问的，需要首先用ioremap()函数将设备所处的物理地址映射到内核虚拟地址空间（3GB~4GB）</strong>。然后，才能根据映射所得到的内核虚拟地址范围，通过访问指令访问这些IO内存资源。在将I/O内存资源的物理地址映射成核心虚地址后，理论上讲我们就可以象读写RAM那样直接读写I/O内存资源了。为了保证驱动程序的跨平台的可移植性，我们应该使用Linux中特定的函数来访问I/O内存资源，而不应该通过指向核心虚地址的指针来访问。</p>
+<h3 id="mmap"><a class="markdownIt-Anchor" href="#mmap"></a> mmap</h3>
+<p>用mmap映射一个设备，意味着<strong>使用户空间的一段地址关联到设备内存上</strong>，这使得只要程序在分配的地址范围内进行读取或者写入，实际上就是对设备的访问。这种数据传输是直接的，不需要用到内核空间作为数据转移的中间站。remap_page_range（）函数的功能是构造用于映射一段物理地址的新页表，<strong>实现了内核空间与用户空间的映射</strong>。在内核<strong>驱动程序的初始化阶段</strong>，通过i<strong>oremap（）将物理地址映射到内核虚拟空间</strong>；在驱动程序的<strong>mmap系统调用中</strong>，使用remap_page_range()将该<strong>块ROM映射到用户虚拟空间</strong>。这样内核空间和用户空间都能访问这段被映射后的虚拟地址。</p>
+<p>☢进程空间/内核空间/IO内存</p>
+<p>其中，后面两个指的是同一段物理内存区域，只是一个为虚拟地址（内核空间），一个为物理地址（IO内存）。进程空间和内核空间对应着不同的物理地址，它们之间的数据传递，是实际的数据的拷贝。</p>
+<p>☢进程空间/IO内存</p>
+<p>其中，进程空间mmap得到的那段虚拟地址跟IO内存对应着同一段物理地址。这个过程没有额外的数据中转，读写都直接针对硬件的物理地址进行。</p>
+<p>一般来讲，小数据量的传输用ioremap()就足够了，</p>
+<h3 id="io内存的一般访问方法"><a class="markdownIt-Anchor" href="#io内存的一般访问方法"></a> IO内存的一般访问方法</h3>
+<p>➣首先是调用request_mem_region()申请资源，即告诉内核，本驱动正在使用这段物理内存，其他驱动不得访问它们。在设备驱动模块加载或open()函数中进行。</p>
+<p>➣接着讲寄存器地址通过ioremap()映射到内核空间虚拟地址，之后就可以通过Linux设备访问编程接口访问这些设备的寄存器了。在设备驱动初始化、write(),read(),ioctl()函数中进行。</p>
+<p>➣ 访问完成之后，应对ioremap()申请的虚拟地址进行释放，并释放release_mem_region()申请的IO内存资源。在设备驱动模块卸载或release()函数中进行。</p>
+<p>➣linux中的物理地址和虚拟地址 ：</p>
+<p>在支持MMU的32位处理器平台上，Linux系统中的物理存储空间和虚拟存储空间的地址范围分别都是从0x00000000到0xFFFFFFFF，共4GB，但物理存储空间与虚拟存储空间布局完全不同。Linux运行在虚拟存储空间，并负责把系统中实际存在的远小于4GB的物理内存根据不同需求映射到整个4GB的虚拟存储空间中。</p>
+<h3 id="物理存储空间布局"><a class="markdownIt-Anchor" href="#物理存储空间布局"></a> 物理存储空间布局</h3>
+<p>Linux的物理存储空间布局与处理器相关，详细情况可以从处理器用户手册的存储空间分布表（memory map）相关章节中查到，我们这里只列出嵌入式处理器平台Linux物理内存空间的一般布局。</p>
+<p>说明：</p>
+<p>➣最大node号n不能大于MAX_NUMNODES-1。</p>
+<p>➣MAX_NUMNODES表示系统支持的最多node数。在ARM系统中，Sharp芯片最多支持16个nodes，其他芯片最多支持4个nodes。</p>
+<p>➣numnodes是当前系统中实际的内存node数。</p>
+<p>➣在不支持CONFIG_DISCONTIGMEM选项的系统中，只有一个内存node。</p>
+<p>➣最大bank号m不能大于NR_BANKS-1。</p>
+<p>➣NR_BANKS表示系统中支持的最大内存bank数，一般等于处理器的RAM片选数。在ARM系统中，Sharp芯片最多支持16个banks，其他芯片最多支持8个banks。</p>
+<p>➣mem_init()函数会将所有节点的页帧位码表所占空间、孔洞页描述符空间及空闲内存页都释放掉。</p>
+<h3 id="虚拟存储空间布局"><a class="markdownIt-Anchor" href="#虚拟存储空间布局"></a> 虚拟存储空间布局</h3>
+<p>在支持MMU的系统中，当系统做完硬件初始化后就使能MMU功能，这样整个系统就运行在虚拟存储空间中，实现虚拟存储空间到物理存储空间映射功能的是处理器的MMU，而虚拟存储空间与5路存储空间的映射关系则是由Linux内核来管理的。32位系统中物理存储空间占4GB空间，虚拟存储空间同样占4GB空间，Linux把物理空间中实际存在的远远小于4GB的内存空间映射到整个4GB虚拟存储空间中除映射I/O空间之外的全部空间，所以虚拟内存空间远远大于物理内存空间，这就说同一块物理内存可能映射到多处虚拟内存地址空间上，这正是Linux内存管理职责所在。</p>
+<p>说明：</p>
+<p>➣线性地址空间：是指Linux系统中从0x00000000到0xFFFFFFFF整个4GB虚拟存储空间。</p>
+<p>➣内核空间：内核空间表示运行在处理器最高级别的超级用户模式（supervisor mode）下的代码或数据，内核空间占用从0xC000000到0xFFFFFFFF的1GB线性地址空间，内核线性地址空间由所有进程共享，但只有运行在内核态的进程才能访问，用户进程可以通过系统调用切换到内核态访问内核空间，进程运行在内核态时所产生的地址都属于内核空间。</p>
+<p>➣用户空间：用户空间占用从0x00000000到0xBFFFFFFF共3GB的线性地址空间，每个进程都有一个独立的3GB用户空间，所以用户空间由每个进程独有，但是内核线程没有用户空间，因为它不产生用户空间地址。另外子进程共享（继承）父进程的用户空间只是使用与父进程相同的用户线性地址到物理内存地址的映射关系，而不是共享父进程用户空间。运行在用户态和内核态的进程都可以访问用户空间。</p>
+<p>➣内核逻辑地址空间：是指从PAGE_OFFSET到high_memory之间的线性地址空间，是系统物理内存映射区，它映射了全部或部分（如果系统包含高端内存）物理内存。内核逻辑地址空间与图18-4中的系统RAM内存物理地址空间是一一对应的（包括内存孔洞也是一一对应的），内核逻辑地址空间中的地址与RAM内存物理地址空间中对应的地址只差一个固定偏移量，如果RAM内存物理地址空间从0x00000000地址编址，那么这个偏移量就是PAGE_OFFSET。</p>
+<p>➣低端内存：内核逻辑地址空间所映射物理内存就是低端内存，低端内存在Linux线性地址空间中始终有永久的一一对应的内核逻辑地址，系统初始化过程中将低端内存永久映射到了内核逻辑地址空间，为低端内存建立了虚拟映射页表。低端内存内物理内存的物理地址与线性地址之间的转换可以通过**__pa(x)和__va(x)**两个宏来进行，<mark>pa(x)将内核逻辑地址空间的地址x转换成对应的物理地址，相当于</mark>virt_to_phys((unsigned long)(x))，<code>__va(x)则相反，把低端物理内存空间的地址转换成对应的内核逻辑地址，相当于</code>((void *)__phys_to_virt((unsigned long)(x)))。</p>
+<p>➣高端内存：低端内存地址之上的物理内存是高端内存，高端内存在Linux线性地址空间中没有没有固定的一一对应的内核逻辑地址，系统初始化过程中不会为这些内存建立映射页表将其固定映射到Linux线性地址空间，而是需要使用高端内存的时候才为分配的高端物理内存建立映射页表，使其能够被内核使用，否则不能被使用。高端内存的物理地址于现行地址之间的转换不能使用上面的__pa(x)和__va(x)宏。</p>
+<p>➣高端内存概念的由来：如上所述，Linux将4GB的线性地址空间划分成两部分，从0x00000000到0xBFFFFFFF共3GB空间作为用户空间由用户进程独占，这部分线性地址空间并没有固定映射到物理内存空间上；从0xC0000000到0xFFFFFFFF的第4GB线性地址空间作为内核空间，在<mark>嵌入式系统</mark>中，这部<mark>分线性地址空间除了映射物理内存空间之外还要映射处理器内部外设寄存器空间等I/O空间</mark>。</p>
+<p><mark>0xC0000000~high_memory之间的内核逻辑地址空间专用来固定映射系统中的物理内存</mark>，也就是说0xC0000000~high_memory之间空间大小与系统的物理内存空间大小是相同的（当然在配置了CONFIG_DISCONTIGMEMD选项的非连续内存系统中，内核逻辑地址空间和物理内存空间一样可能存在内存孔洞），如果系统中的物理内存容量远小于1GB，那么内核现行地址空间中内核逻辑地址空间之上的<mark>high_memory~0xFFFFFFFF</mark>之间还有足够的空间来固定映射一些I/O空间。可是，如果系统中的物理内存容量（包括内存孔洞）小于1GB，那么就没有足够的内核线性地址空间来固定映射系统全部物理内存以及一些I/O空间了，为了解决这个问题，在x86处理器平台设置了一个经验值：896MB，就是说，如果系统中的物理内存（包括内存孔洞）大于896MB，那么将前896MB物理内存固定映射到内核逻辑地址空间</p>
+<p>0xC0000000~0xC0000000+896MB（=high_memory）上，<code>而896MB之后的物理内存则不建立到内核线性地址空间的固定映射，这部分内存就叫高端物理内存</code>。此时内核线性地址空间high_memory~0xFFFFFFFF之间的128MB空间就称为高端内存线性地址空间，用来映射高端物理内存和I/O空间。896MB是x86处理器平台的经验值，留了128MB线性地址空间来映射高端内存以及I/O地址空间，我们在嵌入式系统中可以根据具体情况修改这个阈值，比如，MIPS中将这个值设置为0x20000000B（512MB），那么只有当系统中的物理内存空间容量大于0x20000000B时，内核才需要配置CONFIG_HIGHMEM选项，使能内核对高端内存的分配和映射功能。什么情况需要划分出高端物理内存以及高端物理内存阈值的设置原则见上面的内存页区（zone）概念说明。</p>
+<p>➣高端线性地址空间：从high_memory到0xFFFFFFFF之间的线性地址空间属于高端线性地址空间，其中VMALLOC_START~VMALLOC_END之间线性地址被vmalloc()函数用来分配物理上不连续但线性地址空间连续的高端物理内存，或者被vmap()函数用来映射高端或低端物理内存，或者由ioremap()函数来重新映射I/O物理空间。PKMAP_BASE开始的LAST_PKMAP（一般等于1024）页线性地址空间被kmap()函数用来永久映射高端物理内存。FIXADDR_START开始的KM_TYPE_NR*NR_CPUS页线性地址空间被kmap_atomic()函数用来临时映射高端物理内存，其他未用高端线性地址空间可以用来在系统初始化期间永久映射I/O地址空间。</p>
+<h3 id="嵌入式系统中如何访问io资源"><a class="markdownIt-Anchor" href="#嵌入式系统中如何访问io资源"></a> 嵌入式系统中如何访问I/O资源</h3>
+<p>几乎每一种外设都是通过读写设备上的寄存器来进行的，通常包括控制寄存器、状态寄存器和数据寄存器三大类，外设的寄存器通常被连续地编址。根据CPU体系结构的不同，CPU对IO端口的编址方式有两种：</p>
+<p>➣I/O映射方式（I/O-mapped）</p>
+<p>典型地，如X86处理器为外设专门实现了一个单独的地址空间，称为&quot;I/O地址空间&quot;或者&quot;I/O端口空间&quot;，CPU通过专门的I/O指令（如X86的IN和OUT指令）来访问这一空间中的地址单元。</p>
+<p>➣内存映射方式（Memory-mapped）</p>
+<p>RISC指令系统的CPU（如ARM、PowerPC等）通常只实现一个物理地址空间，外设I/O端口成为内存的一部分。此时，CPU可以象访问一个内存单元那样访问外设I/O端口，而不需要设立专门的外设I/O指令。</p>
+<p>但是，这两者在硬件实现上的差异对于软件来说是完全透明的，驱动程序开发人员可以将内存映射方式的I/O端口和外设内存统一看作是&quot;I/O内存&quot;资源。</p>
+<p>一般来说，在系统运行时，外设的I/O内存资源的物理地址是已知的，由硬件的设计决定。但是CPU通常并没有为这些已知的外设I/O内存资源的物理地址预定义虚拟地址范围，驱动程序并不能直接通过物理地址访问I/O内存资源，而必须将它们映射到核心虚地址空间内（通过页表），然后才能根据映射所内指令访问这些I/O得到的核心虚地址范围，通过访内存资源。Linux在io.h头文件中声明了函数ioremap（），用来将I/O内存资源的物理地址映射到核心虚地址空间（3GB－4GB）中，原型如下：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><code class="hljs c"><span class="hljs-function"><span class="hljs-keyword">void</span> * <span class="hljs-title">ioremap</span><span class="hljs-params">(<span class="hljs-keyword">unsigned</span> <span class="hljs-keyword">long</span> phys_addr, <span class="hljs-keyword">unsigned</span> <span class="hljs-keyword">long</span> <span class="hljs-built_in">size</span>, <span class="hljs-keyword">unsigned</span> <span class="hljs-keyword">long</span> flags)</span></span>;<br></code></pre></td></tr></table></figure>
+<p>iounmap函数用于取消ioremap（）所做的映射，原型如下：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><code class="hljs c"><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">iounmap</span><span class="hljs-params">(<span class="hljs-keyword">void</span> * addr)</span></span>;<br></code></pre></td></tr></table></figure>
+<p>这两个函数都是实现在mm/ioremap.c文件中。</p>
+<p>在将I/O内存资源的物理地址映射成核心虚地址后，理论上讲我们就可以象读写RAM那样直接读写I/O内存资源了。为了保证驱动程序的跨平台的可移植性，我们应该使用Linux中特定的函数来访问I/O内存资源，而不应该通过指向核心虚地址的指针来访问。如在x86平台上，读写I/O的函数如下所示：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> readb(addr) (*(volatile unsigned char *) __io_virt(addr))</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> readw(addr) (*(volatile unsigned short *) __io_virt(addr))</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> readl(addr) (*(volatile unsigned int *) __io_virt(addr))</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> writeb(b,addr) (*(volatile unsigned char *) __io_virt(addr) = (b))</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> writew(b,addr) (*(volatile unsigned short *) __io_virt(addr) = (b))</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> writel(b,addr) (*(volatile unsigned int *) __io_virt(addr) = (b))</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> memset_io(a,b,c) memset(__io_virt(a),(b),(c))</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> memcpy_fromio(a,b,c) memcpy((a),__io_virt(b),(c))</span><br><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> memcpy_toio(a,b,c) memcpy(__io_virt(a),(b),(c))</span><br></code></pre></td></tr></table></figure>
+<p><code></code>最后，我们要特别强调驱动程序中mmap函数的实现方法。用mmap映射一个设备，意味着使用户空间的一段地址关联到设备内存上，这使得只要程序在分配的地址范围内进行读取或者写入，实际上就是对设备的访问。</p>
+<h3 id="物理地址线性地址和虚拟地址对应关系"><a class="markdownIt-Anchor" href="#物理地址线性地址和虚拟地址对应关系"></a> 物理地址,线性地址和虚拟地址对应关系</h3>
+<p><img src= "/img/loading.gif" data-src="http://blog.chinaunix.net/attachment/201103/9/23208702_1299675040US6u.jpg" alt="img" /></p>
+<p>[<a href="https://www.cnblogs.com/big-devil/p/8590228.html" target="_blank" rel="noopener">Linux虚拟地址和物理地址的映射</a>]</p>
+<h1 id="堆基础知识"><a class="markdownIt-Anchor" href="#堆基础知识"></a> 堆基础知识</h1>
+<p><code>推荐阅读</code>: <a href="https://blog.csdn.net/songchuwang1868/article/details/89951543?utm_source=app" target="_blank" rel="noopener">malloc的实现（ptmalloc）</a></p>
+<p><a href="https://github.com/sploitfun/lsploits/blob/master/glibc/malloc/arena.c#L59" target="_blank" rel="noopener"><strong>heap_info</strong></a> – Heap Header – 一个单独的thread arena可以拥有多个 heaps. 每个heap拥有它们自己的头. 开始的时候每一个thread arena包含一个heap, 但后来该heap段空间用完, 新的heap(不连续内存)会映射到这个arena</p>
+<p><a href="https://github.com/sploitfun/lsploits/blob/master/glibc/malloc/malloc.c#L1671" target="_blank" rel="noopener"><strong>malloc_state</strong></a> – Arena Header --一个单独thread arena可以有多个堆,但是那些堆只能有一个arena header存在. Arena header包含bins, top chunk, lastremainder chunk等信息</p>
+<p><strong><a href="https://github.com/sploitfun/lsploits/blob/master/glibc/malloc/malloc.c#L1108" target="_blank" rel="noopener">malloc_chunk</a></strong> – Chunk Header–chunk基本结构</p>
+<p>libc【HEAP】常用的部分：</p>
+<ul>
+<li>
+<p>C</p>
+<ul>
+<li>malloc、free、realloc</li>
+</ul>
+</li>
+<li>
+<p>C++,C#</p>
+<ul>
+<li>new，delete</li>
+</ul>
+</li>
+<li>
+<p>整个Heap的资料记录在一个struct malloc_state中，称为main_arena</p>
+</li>
+<li>
+<p>malloc分配的内存称为chunk，会比要求的大一点，因为需要记录一些维护heap用的额外资料</p>
+</li>
+<li>
+<p>arena跟heap分配的内存分开存放，heap overflow没有办法直接覆盖它的内容</p>
+</li>
+<li>
+<p>回收的chunk用linked list记录，称为bin</p>
+</li>
+<li>
+<p>main_arena中有很多个bin，每个bin里面存的chunkSize不同，目的是让malloc时可以尽快找到最合适大小的chunk</p>
+</li>
+<li>
+<p>回收的chunk会根据size来决定应该放进那个linked list(bin)中</p>
+</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="code"><pre><code class="hljs c">main_arena &#123;<br>	bin[<span class="hljs-number">0</span>] (<span class="hljs-built_in">size</span>=<span class="hljs-number">16</span>) -&gt; chunk1 -&gt; chunk5<br>	bin[<span class="hljs-number">1</span>] (<span class="hljs-built_in">size</span>=<span class="hljs-number">32</span>) -&gt; chunk2 -&gt; chunk3 -&gt; chunk4<br>	bin[<span class="hljs-number">2</span>] (<span class="hljs-built_in">size</span>=<span class="hljs-number">48</span>) -&gt;<br>&#125;<br></code></pre></td></tr></table></figure>
+<ul>
+<li>
+<p>malloc时，优先从bin里面找出可以使用的chunk，如果找不到才会真的分配新的内存给程序使用。分配时可以去找足够大的chunk只切出需要的部分，剩下的部分形成新的chunk（last_remainder）</p>
+</li>
+<li>
+<p>找不到可用空间时会从TOP chunk分配，TOP chunk是一个很大的chunk，代表可以使用但未分配的内存，malloc分配时从里面切一小块下来，剩下的重新设为TOP chunk(这东西在尾端的高地址，最后一块的chunk)</p>
+</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="code"><pre><code class="hljs c">main_arena &#123;<br>	mchunkptr top -&gt; top_chunk<br>	mchunkptr last_remainder<br>&#125;<br></code></pre></td></tr></table></figure>
+<ul>
+<li>inuse的chunk 是没有*fd和*bk的，被data覆盖了，free的chunk是有这个的</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="code"><pre><code class="hljs c"><span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">malloc_chunk</span> &#123;</span><br>  INTERNAL_SIZE_T      mchunk_prev_size;  <span class="hljs-comment">/* Size of previous chunk (if free).  */</span><br>  INTERNAL_SIZE_T      mchunk_size;       <span class="hljs-comment">/* Size in bytes, including overhead. */</span><br>  <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">malloc_chunk</span>* <span class="hljs-title">fd</span>;</span>         <span class="hljs-comment">/* double links -- used only if free. */</span><br>  <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">malloc_chunk</span>* <span class="hljs-title">bk</span>;</span><br>  <span class="hljs-comment">/* Only used for large blocks: pointer to next larger size.  */</span><br>  <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">malloc_chunk</span>* <span class="hljs-title">fd_nextsize</span>;</span> <span class="hljs-comment">/* double links -- used only if free. */</span><br>  <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">malloc_chunk</span>* <span class="hljs-title">bk_nextsize</span>;</span><br>&#125;;<br></code></pre></td></tr></table></figure>
+<ul>
+<li>
+<p><strong>(64bit): mem = malloc(size) -&gt; chunk = mem -16 ; chunksize = (size+8)#16</strong></p>
+<ul>
+<li>实际chunk地址是malloc得到的地址-16（32bit是-8）</li>
+<li>chunksize 是 size +8 后向上对齐至16的倍数，因为要存放额外的资料</li>
+<li>比如在gdb调试环境下，可以print 变量V(<code>which malloc appl for</code>)，then V-10h is memory address(HeapAddress), we can check it with x/40gx V-10h command(40gx parametre can be change) OR p/x *(struct malloc_chunk*)(V-10h) can show heap parameter what represent for in chunk form.</li>
+</ul>
+</li>
+<li>
+<p><img src= "/img/loading.gif" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/image-20201209172437029.png" alt="image-20201209172437029" /><img src= "/img/loading.gif" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/image-20201209222557225.png" alt="image-20201209222557225" /></p>
+</li>
+<li>
+<p><code>user data 会覆盖到下一个chunk头（多8位）</code></p>
+</li>
+<li>
+<p><mark>size</mark>：这个chunk在内存中的大小，不是malloc size</p>
+</li>
+<li>
+<p><mark>fd，bk</mark>：指向bin里的前一个、后一个chunk</p>
+<ul>
+<li>一般来说bin是double linked list</li>
+</ul>
+</li>
+<li>
+<p><mark>prev_size</mark>: 前一个chunk size，维护heap时可以得知前一个chunk的位置</p>
+</li>
+<li>
+<p><strong>fd_nextsize</strong>:在large bin中指向前一个与当前 chunk 大小不同的第一个空闲块，不包含 bin 的头指针</p>
+</li>
+<li>
+<p><strong>bk_nextsize</strong>: 在large bin中指向后一个与当前 chunk 大小不同的第一个空闲块，不包含 bin 的头指针</p>
+</li>
+<li>
+<p><code>一般空闲的 large chunk 在 fd 的遍历顺序中，按照由大到小的顺序排列。这样做可以避免在寻找合适 chunk 时挨个遍历</code></p>
+</li>
+<li>
+<p>简单来说,每个chunk可以看到四个相邻的chunk</p>
+<ul>
+<li>chunk + size: 内存空间中的下一个chunk</li>
+<li>chunk - prev_size: 内存空间中的前一个chunk</li>
+<li>fd,bk：Double linked list（bin），在内存中不一定是在前面或后面</li>
+<li><img src= "/img/loading.gif" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/image-20201211150559048.png" alt="image-20201211150559048" /></li>
+</ul>
+</li>
+<li>
+<p><code>main_arena</code>，是由主线程创建的，thread_arena则为各线程创建的，当arena满了之后就不再创建而是与其他arena共享一个arena，方法为依次给各个arena上锁（查看是否有其他线程正在使用该arena），如果上锁成功（没有其他线程正在使用），则使用该arena，之后一直使用这个arena，如果无法使用则阻塞等待</p>
+</li>
+<li>
+<p><strong>main arena</strong> <strong>的</strong> <strong>malloc_state</strong> <strong>并不是</strong> <strong>heap segment</strong> <strong>的一部分，而是一个全局变量，存储在</strong> <strong><a href="http://libc.so" target="_blank" rel="noopener">libc.so</a></strong> <strong>的数据段</strong></p>
+<ul>
+<li><a href="https://code.woboq.org/userspace/glibc/malloc/malloc.c.html" target="_blank" rel="noopener">malloc源码</a>：主要看malloc_state, _int_malloc（call到的是_libc_malloc实际起作用的是_int_malloc）, _int_free, (<code>基本就是知道有哪些位置的内存是可以被分配的&amp;有哪些是因为free掉而可以回收的&amp;有哪些位置是使用中则不需要记录，使用它们的人应该记住这些指标</code>)</li>
+</ul>
+</li>
+</ul>
+<h2 id="sbrk与mmap"><a class="markdownIt-Anchor" href="#sbrk与mmap"></a> sbrk与mmap</h2>
+<p><mark>从堆中分配空间，本质是移动一个位置，向后移就是分配空间，向前移就是释放空间。</mark></p>
+<ul>
+<li>sbrk用相对的整数值确定位置，如果这个整数是正数，会从当前位置向后移若干字节，如果为负数就向前若干字节。在任何情况下，返回值永远是移动之前的位置,可以是0</li>
+<li>brk用绝对的地址指定移到哪个位置。</li>
+</ul>
+<p>在堆区中， <strong>start_brk 指向 heap 的开始，而 brk 指向 heap 的顶部</strong>。可以使用系统调用 brk()和 sbrk()来增 加标识 heap 顶部的 brk 值，从而线性的增加分配给用户的 heap 空间。<strong>在使 malloc 之前，brk 的值等于 start_brk，也就是说 heap 大小为 0</strong>。<br />
+　　ptmalloc 在开始时，若请求的空间<strong>小于</strong> mmap 分配阈值（mmap threshold，默认值为 128KB）时，<strong>主分配区(main_arena)会调用 sbrk()增加一块大小为 (128 KB + chunk_size) align 4KB（页面大小对齐） 的空间作为 heap。非主分配区(no_main_arena)会调用 mmap 映射一块大小为 HEAP_MAX_SIZE（32 位系统上默认为 1MB，64 位系统上默认为 64MB）的空间作为 sub-heap</strong>。这就是前面所说的 ptmalloc 所维护的分配空间;　　　<br />
+　　当用户请求内存分配时，首先会在这个区域内找一块合适的 chunk 给用户。当用户释放了 heap 中的 chunk 时，ptmalloc 又会使用 fastbins 和 bins 来组织空闲 chunk。以备用户的下一次分配。<br />
+　　<strong>若需要分配的 chunk 大小<mark>小于</mark> mmap分配阈值，而 heap 空间又不够，则此时主分配区(main_arena)会通过 sbrk()调用来增加 heap 大小，非主分配区(no_main_arena)会调用 mmap 映射一块新的 sub-heap，也就是<mark>增加 top chunk 的大小</mark>，每次 heap 增加的值都会对齐到 4KB</strong>。当用户的请求超过 mmap 分配阈值，并且主分配区使用 sbrk()分配失败的时候，或是非主分配区在 top chunk 中不能分配到需要的内存时，ptmalloc 会尝试使用 mmap()直接映射一块内存到进程内存空间。<strong>使用 mmap()直接映射的 chunk 在释放时直接解除映射，而不再属于进程的内存空间</strong>。任何对该内存的访问都会产生段错误。<strong>而在 heap 中或是 sub-heap 中分配的空间则可能会留在进程内存空间内，还可以再次引用（当然是很危险的）。</strong></p>
+<h3 id="example"><a class="markdownIt-Anchor" href="#example"></a> EXAMPLE</h3>
+<h4 id="情况一"><a class="markdownIt-Anchor" href="#情况一"></a> <strong>情况一</strong></h4>
+<p>malloc小于128k的内存，使用brk分配内存，将_edata往高地址推(只分配虚拟空间，不对应物理内存(因此没有初始化)，第一次读/写数据时，引起内核缺页中断，内核才分配对应的物理内存，然后虚拟地址空间建立映射关系)，如下图：</p>
+<p>1、进程启动的时候，其（虚拟）内存空间的初始布局如图1所示。<br />
+其中，mmap内存映射文件是在堆和栈的中间（<a href="http://xn--libc-2-9v9ii49d.2.93.so" target="_blank" rel="noopener">例如libc-2.2.93.so</a>，其它数据文件等），为了简单起见，省略了内存映射文件。<br />
+<strong>_edata指针（glibc里面定义）指向数据段的最高地址。</strong></p>
+<p><img src= "/img/loading.gif" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/20190121151501407.png" alt="img" /></p>
+<p>2、进程调用A=malloc(30K)以后，内存空间如图2：<br />
+malloc函数会调用brk系统调用，将_edata指针往高地址推30K，就完成虚拟内存分配。<br />
+你可能会问：只要把_edata+30K就完成内存分配了？<br />
+事实是这样的，_edata+30K只是完成虚拟地址的分配，A这块内存现在还是没有物理页与之对应的，等到进程第一次读写A这块内存的时候，发生缺页中断，这个时候，内核才分配A这块内存对应的物理页。也就是说，如果用malloc分配了A这块内容，然后从来不访问它，那么，A对应的物理页是不会被分配的。<br />
+3、进程调用B=malloc(40K)以后，内存空间如图3。</p>
+<h4 id="情况二"><a class="markdownIt-Anchor" href="#情况二"></a> <strong>情况二</strong></h4>
+<p>malloc大于128k的内存，使用mmap分配内存，在堆和栈之间找一块空闲内存分配(对应独立内存，而且初始化为0)，如下图：<img src= "/img/loading.gif" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/2019012115164361.png" alt="img" /></p>
+<p>4、进程调用C=malloc(200K)以后，内存空间如图4：<br />
+默认情况下，malloc函数分配内存，如果请求内存大于128K（可由M_MMAP_THRESHOLD选项调节），那就不是去推_edata指针了，而是利用<strong>mmap系统调用，从堆和栈的中间分配一块虚拟内存。</strong><br />
+这样子做主要是因为::<br />
+brk分配的内存需要等到高地址内存释放以后才能释放（例如，在B释放之前，A是不可能释放的，这就是内存碎片产生的原因，什么时候紧缩看下面），而mmap分配的内存可以单独释放。<br />
+当然，还有其它的好处，也有坏处，再具体下去，有兴趣的同学可以去看glibc里面malloc的代码了。<br />
+5、进程调用D=malloc(100K)以后，内存空间如图5；<br />
+6、进程调用free©以后，C对应的虚拟内存和物理内存一起释放。<img src= "/img/loading.gif" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/20190121151749214.png" alt="img" /></p>
+<p>7、进程调用free(B)以后，如图7所示：<br />
+<strong>B对应的虚拟内存和物理内存都没有释放，因为只有一个_edata指针，如果往回推，那么D这块内存怎么办呢？<br />
+当然，B这块内存，是可以重用的，如果这个时候再来一个40K的请求，那么malloc很可能就把B这块内存返回回去了。</strong><br />
+8、进程调用free(D)以后，如图8所示：<br />
+<strong>B和D连接起来，变成一块140K的空闲内存。</strong><br />
+9、默认情况下：<br />
+当最高地址空间的空闲内存超过128K（可由M_TRIM_THRESHOLD选项调节）时，执行内存紧缩操作（trim）。在上一个步骤free的时候，<strong>发现最高地址空闲内存超过128K，于是内存紧缩</strong>，变成图9所示。</p>
+<h2 id="arena"><a class="markdownIt-Anchor" href="#arena"></a> Arena</h2>
+<figure class="highlight c"><table><tr><td class="code"><pre><code class="hljs c">操作系统 --&gt; 堆管理器 --&gt; 用户<br>物理内存 --&gt; arena  --&gt; 可用内存<br>For <span class="hljs-number">32</span> <span class="hljs-built_in">bit</span> systems:<br>     Number of arena = <span class="hljs-number">2</span> * number of cores.<br>For <span class="hljs-number">64</span> <span class="hljs-built_in">bit</span> systems:<br>     Number of arena = <span class="hljs-number">8</span> * number of cores.<br>main_arena 不在heap里且没有heap_info构,main_arena是全局变量因此可以在libc.so的data段找到<br></code></pre></td></tr></table></figure>
+<p>堆管理器与用户的内存交易发生于arena中，可以理解为堆管理器向操作系统批发来的有冗余的内存库存</p>
+<ol>
+<li>main_arena和只有一个Heap_info的thread_arena<img src= "/img/loading.gif" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/image-20201214141200784.png" alt="image-20201214141200784" /></li>
+<li>有多个Heap_info的thread_arena<img src= "/img/loading.gif" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/image-20201216114533285.png" alt="image-20201216114533285" /></li>
+</ol>
+<p>内存分配器中，为了解决多线程锁争夺问题，分为<strong>主分配区main_arena（分配区的本质就是内存池，管理着chunk，一般用英文arena表示）<strong>和</strong>非主分配区no_main_arena</strong>。 （主分配区和非主分配区的区别）</p>
+<p>1. 主分配区和非主分配区形成一个<strong>环形链表</strong>进行管理。<br />
+　2. 每一个分配区利用<strong>互斥锁</strong>使线程对于<strong>该分配区的访问互斥</strong>。<br />
+　3. 每个进程只有<strong>一个主分配区</strong>，也可以允许有<strong>多个非主分配区</strong>。<br />
+　4. ptmalloc根据系统对分配区的争用动态增加分配区的大小，<strong>分配区的数量一旦增加，则不会减少</strong>。<br />
+　5. <strong>主分配区可以使用brk和mmap(一般不用)来分配</strong>，而<strong>非主分配区只能使用mmap来映射内存块</strong><br />
+　6. 申请小内存时会产生很多内存碎片，ptmalloc在<strong>整理时</strong>也需要对<strong>分配区做加锁操作</strong>。</p>
+<p>当一个线程需要使用malloc分配内存的时候，会先查看该线程的私有变量中是否已经存在一个分配区。若是存在。会尝试对其进行加锁操作。若是<strong>加锁成功</strong>，就在<strong>使用该分配区分配内存</strong>，若是<strong>失败</strong>，就会<strong>遍历循环链表</strong>中获取一个<strong>未加锁的分配区</strong>。若是<strong>整个链表中都没有未加锁的分配区</strong>，则<strong>malloc会开辟一个新的分配区</strong>，将<strong>其加入全局的循环链表并加锁</strong>，然后使用<strong>该分配区</strong>进行<strong>内存分配</strong>。当<strong>释放这块内存</strong>时，同样会先<strong>获取待释放内存块</strong>所在的<strong>分配区的锁</strong>。若是有<strong>其他线程正在使用</strong>该分配区，则<strong>必须等待</strong>其他线程<strong>释放</strong>该分配区<strong>互斥锁之后</strong>才能<mark>进行</mark><strong>释放内存的操作</strong>。</p>
+<p>需要注意几个点：</p>
+<ul>
+<li>主分配区通过brk进行分配，非主分配区通过mmap进行分配</li>
+<li>从分配区虽然是mmap分配，但是和<strong>大于128K直接使用mmap分配没有任何联系</strong>。<strong>大于128K的内存使用mmap分配，使用完之后直接用munmap还给系统</strong></li>
+<li>每个线程在malloc会先获取一个arena，使用arena内存池分配自己的内存，这里存在竞争问题</li>
+<li>为了避免竞争，我们可以使用线程局部存储，<strong>thread cache（tcmalloc中的tc正是此意）</strong>，线程局部存储对area的改进原理如下：</li>
+</ul>
+<ol>
+<li>如果需要在一个线程内部的各个函数调用都能访问、但其它线程不能访问的变量（被称为<strong>static memory local to a thread 线程局部静态变量</strong>），就需要新的机制来实现。这就是TLS。</li>
+<li><strong>thread cache</strong>本质上是在<strong>static区</strong>为<strong>每一个thread</strong>开辟一个<strong>独有</strong>的<strong>空间</strong>，因为独有，不再有竞争</li>
+<li>每次malloc时，先去线程局部存储空间中找arena，用thread cache中的arena分配存在thread arena中的chunk。当不够时才去找堆区的arena</li>
+<li>C++11中提供thread_local方便于线程局部存储</li>
+</ol>
+<ul>
+<li>实际上tcmalloc和jemalloc都不再使用主分配区，直接使用非主分配区</li>
+</ul>
+<h2 id="bins"><a class="markdownIt-Anchor" href="#bins"></a> bins</h2>
+<p><img src= "/img/loading.gif" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/image-20201214115308952.png" alt="image-20201214115308952" /></p>
+<h3 id="bins分类32位"><a class="markdownIt-Anchor" href="#bins分类32位"></a> bins分类(32位)</h3>
+<p>64位*2</p>
+<ol>
+<li>Fast bins</li>
+<li>unsorted bins</li>
+<li>Small bins</li>
+<li>Large bins</li>
+<li>(tcache)</li>
+</ol>
+<p>small bins：小于512B的chunk</p>
+<p>large bins： 512B-128K的chunk</p>
+<p>unsorted bins：一般free的chunk大部分会存放到unsorted bins里，等下次申请的时候再分配。另外切割剩下的部分也会被放到unsorted bins。所以更多的像是一个temp，中转站。</p>
+<p>fast bins：相当于bins的缓存，采用单链表的形式，便于快速查询使用。一般大小在0-64B</p>
+<p>tcache: 比Fastbin要快(详情见tcache分栏) glibc2.26之后才出现</p>
+<h3 id="bin的调用顺序"><a class="markdownIt-Anchor" href="#bin的调用顺序"></a> bin的调用顺序</h3>
+<ol>
+<li>fast bins：针对小字节的chunk，第一步先从fast chunk里面查找。因为是<code>单链表</code>，且是相同大小的，速度比较快。</li>
+<li>smal bins：单个链表下chunk大小相同，不同链表的chunk间隔是88</li>
+<li>unsorted bins：先查询unsorted bins有没有合适的，如果没有，会把fast bins拿过来，用于合并和切割。然后分配到small bins和large bins</li>
+<li>large bins：一个链表中大小不一样，是处于一个范围内，间隔也不相同</li>
+<li>top chunk：对于从large bins查找不到的内存块，需要从heap旁的chunk申请。可以通过移动brk指针</li>
+<li>mmap chunk：对于大于128k，需要从mmap中申请</li>
+</ol>
+<h2 id="chunk"><a class="markdownIt-Anchor" href="#chunk"></a> chunk</h2>
+<p><img src= "/img/loading.gif" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/image-20201215105207925.png" alt="" /></p>
+<p><img src= "/img/loading.gif" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/image-20201215105113188.png" alt="image-20201215105113188" /></p>
+<p><strong>A flag</strong>: NON_MAIN_ARENA，记录当前 chunk是否不属于主线程，1 表示不属于，0 表示属于。</p>
+<p><strong>M flag</strong>: IS_MAPPED，记录当前 chunk 是否是由 mmap 分配的。</p>
+<p><strong>P flag</strong>: PREV_INUSE，记录前一个 chunk 块是否被分配。一般来说，堆中第一个被分配的内存块的 size 字段的 P 位都会被设置为 1，以便于防止访问前面的非法内存。当一个 chunk 的 size 的 P 位为 0 时，我们能通过 prev_size 字段来获取上一个 chunk 的大小以及地址。这也方便进行空闲 chunk 之间的合并。</p>
+<p><strong>注意</strong>，如果是个较大的chunk(一般是&gt;=<code>0x400</code>)，那么还会有<code>fd_nextsize</code>和<code>bk_nextsize</code>，largebin中的chunk是按照从大到小的顺序排列的(表头大，表尾小)，当有相同size的chunk时则按照free的时间顺序排序。同时相同size的chunk，只有第一个chunk会有<code>fd_nextsize</code>和<code>bk_nextsize</code>，其他的都没有，<code>fd_nextsize</code>和<code>bk_nextsize</code>置为0。</p>
+<h3 id="top-chunk"><a class="markdownIt-Anchor" href="#top-chunk"></a> TOP chunk</h3>
+<p>top chunk相当于分配区的顶部空闲内存（可能就是由brk调用控制的brk指针），<mark><strong>当bins上都不能满足内存分配要求的时候，就会来top chunk上分配</strong></mark>。<br />
+　　当top chunk大小比用户所请求大小<strong>还大</strong>的时候，top chunk会分为两个部分：User chunk（用户请求大小）和Remainder chunk（剩余大小）。其中Remainder chunk成为新的top chunk。<br />
+　　当top chunk大小<strong>小于</strong>用户所请求的大小时，top chunk就通过**sbrk（main arena）<strong>或</strong>mmap（thread arena）**系统调用来扩容。</p>
+<h3 id="mmaped-chunk"><a class="markdownIt-Anchor" href="#mmaped-chunk"></a> mmaped chunk</h3>
+<p>当**分配的内存非常大（大于分配阀值，默认128K）**的时候，需要被mmap映射，则会放到mmaped chunk上，当释放mmaped chunk上的内存的时候会直接交还给操作系统。 （chunk中的M标志位置1）</p>
+<p>mmap得到的位置是连续的, 得到的chunk会接在上一次mmap之前, 通常最后一次mmap会是tls段</p>
+<h3 id="last-remainder-chunk"><a class="markdownIt-Anchor" href="#last-remainder-chunk"></a> last remainder chunk</h3>
+<p>Last remainder chunk是另外一种特殊的chunk，就像top chunk和mmaped chunk一样，不会在任何bins中找到这种chunk。当需要分配一个small chunk,但在small bins中找不到合适的chunk，如果last remainder chunk的大小大于所需要的small chunk大小，last remainder chunk被分裂成两个chunk，其中一个chunk返回给用户，另一个chunk变成新的last remainder chunk。</p>
+<h2 id="fastbin"><a class="markdownIt-Anchor" href="#fastbin"></a> Fastbin</h2>
+<p><img src= "/img/loading.gif" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/image-20201215111514380.png" alt="image-20201215111514380" /></p>
+<h2 id="unsorted-bin"><a class="markdownIt-Anchor" href="#unsorted-bin"></a> <strong>unsorted bin</strong></h2>
+<ul>
+<li>bins[1]</li>
+<li>管理刚刚释放还为分类的 chunk</li>
+<li>可以视为空闲 chunk 回归其所属 bin 之前的缓冲区</li>
+<li><img src= "/img/loading.gif" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/image-20201215111459904.png" alt="image-20201215111459904" /></li>
+</ul>
+<h2 id="small-bins"><a class="markdownIt-Anchor" href="#small-bins"></a> <strong>small bins</strong></h2>
+<p><img src= "/img/loading.gif" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/image-20201215111629639.png" alt="image-20201215111629639" /></p>
+<ul>
+<li>bins[2] ~ bins[63]</li>
+<li>62 个循环双向链表</li>
+<li>FIFO</li>
+<li>管理 16、24、32、40、 …… 、504 Bytes 的 free chunks（32位下）</li>
+<li>每个链表中存储的 chunk 大小都一致</li>
+</ul>
+<h2 id="large-bins"><a class="markdownIt-Anchor" href="#large-bins"></a> <strong>large bins</strong></h2>
+<p><img src= "/img/loading.gif" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/image-20201215111717462.png" alt="image-20201215111717462" /></p>
+<ul>
+<li>bins[64] ~ bins[126]</li>
+<li>63 个循环双向链表</li>
+<li>FIFO</li>
+<li>管理大于 504 Bytes 的 free chunks（32位下）</li>
+<li>large bins中的每一个bin分别包含了一个给定范围内的chunk，其中的chunk按大小递减排序，大小相同则按照最近使用时间排列。</li>
+<li>分配时，遵循原则“smallest-first , best-fit”,从顶部遍历到底部以找到一个大小最接近用户需求的chunk。一旦找到，相应chunk就会分成两块User chunk（用户请求大小）返回给用户。 Remainder chunk 剩余部分添加到unsorted bin。free时和small bin 类似。</li>
+<li>两个毗连的空闲chunk会被合并成一个空闲chunk。</li>
+</ul>
+<h3 id="chunk运行模式"><a class="markdownIt-Anchor" href="#chunk运行模式"></a> chunk运行模式</h3>
+<p>想要Free当前chunk，nextchunk（chunk+size）也是被Free掉的；比如说当前chunk是64B，nextchunk是64B，当你Free当前chunk的时候，得到的是128B的chunk；chunk size 为把size位置最低3bits归0</p>
+<p>要想知道当前chunk是不是in use，就要查看下一个chunk的prev_size的最低bit是不是1；free 会使得下一个chunk的prev_inuse bit 被设为0</p>
+<p><mark><strong>malloc</strong></mark></p>
+<p>•它根据用户申请的内存块大小以及相应大小 chunk 通常使用的频度（fastbin chunk, small chunk, large chunk），依次实现了不同的分配方法。</p>
+<p>•它由小到大依次检查不同的 bin 中是否有相应的空闲块可以满足用户请求的内存。</p>
+<p>•当所有的空闲 chunk 都无法满足时，它会考虑 top chunk。</p>
+<p>•当 top chunk 也无法满足时，堆分配器才会进行内存块申请。</p>
+<p><code>malloc</code></p>
+<ul>
+<li>找出一个可用的chunk,或者从top chunk切一个下来</li>
+<li>如果chunk是回收的, 要先从bin里面unlink, 即移出linked list</li>
+<li>填好结构,并传回chunk+10h</li>
+</ul>
+<p><mark><strong>free</strong></mark></p>
+<p>•它将用户暂且不用的chunk回收给堆管理器，适当的时候还会归还给操作系统。</p>
+<p>•它依据chunk大小来优先试图将free chunk链入tcache或者是fast bin。不满足则链入usorted bin中。</p>
+<p>•在条件满足时free函数遍历usorted bin并将其中的物理相邻的free chunk合并，将相应大小的chunk分类放入small bin或large bin中。</p>
+<p>•除了tcache chunk与fast bin chunk，其它chunk在free时会与其物理相邻的free chunk合并</p>
+<p><code>free</code></p>
+<ul>
+<li>检查该chunk内存地址前后的chunk, 是不是not inuse</li>
+<li>如果有, 则这些回收的内存可以被拼成一块</li>
+<li>合并后的新chunk, 放入对应的bin中</li>
+</ul>
+<h2 id="tcache"><a class="markdownIt-Anchor" href="#tcache"></a> tcache</h2>
+<p>tcache是libc2.26之后引进的一种新机制。</p>
+<h3 id="原理及机制"><a class="markdownIt-Anchor" href="#原理及机制"></a> 原理及机制</h3>
+<ul>
+<li>
+<p>简单来说就是类似fastbin一样的东西，每条链上最多可以有 7 个 chunk，free的时候当tcache满了才放入fastbin，unsorted bin，malloc的时候优先去tcache找</p>
+</li>
+<li>
+<p>在tcache中新增了两个结构体，分别是tcache_entry和tcache_perthread_struct</p>
+</li>
+<li>
+<p><code>tcache_prethread_struct</code> 是整个 tcache 的管理结构，其中有 64 项 entries。每个 entries 管理了若干个大小相同的 chunk，用``单向链表 (tcache_entry`) 的方式连接释放的 chunk，这一点上和 fastbin 很像</p>
+</li>
+<li>
+<p>每个 thread 都会维护一个 <code>tcache_prethread_struct</code></p>
+</li>
+<li>
+<p><code>tcache_prethread_struct</code> 中的 <code>counts</code> 记录 <code>entries</code> 中每一条链上 chunk 的数目，每条链上最多可以有 7 个 chunk</p>
+</li>
+<li>
+<p><code>tcache_entry</code> 用于链接 chunk 结构体，其中的 <code>next</code> 指针指向下一个大小相同的 chunk</p>
+<ul>
+<li>这里与 fastbin 不同的是 fastbin 的 fd 指向 chunk 开头的地址，而 tcache 的 next 指向 user data 的地方，即 chunk header 之后<img src= "/img/loading.gif" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/image-20201214144725483.png" alt="image-20201214144725483" /></li>
+</ul>
+<figure class="highlight c"><table><tr><td class="code"><pre><code class="hljs c"><span class="hljs-comment">/* We overlay this structure on the user-data portion of a chunk when the chunk is stored in the per-thread cache.  */</span><br><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">tcache_entry</span></span><br><span class="hljs-class">&#123;</span><br>  <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">tcache_entry</span> *<span class="hljs-title">next</span>;</span><br>&#125; tcache_entry;<br><br><span class="hljs-comment">/* There is one of these for each thread, which contains the per-thread cache (hence "tcache_perthread_struct").  Keeping overall size low is mildly important.  Note that COUNTS and ENTRIES are redundant (we could have just counted the linked list each time), this is for performance reasons.  */</span><br><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">tcache_perthread_struct</span></span><br><span class="hljs-class">&#123;</span><br>  <span class="hljs-keyword">char</span> counts[TCACHE_MAX_BINS];<br>  tcache_entry *entries[TCACHE_MAX_BINS];<br>&#125; tcache_perthread_struct;<br><span class="hljs-meta"># <span class="hljs-meta-keyword">define</span> TCACHE_MAX_BINS                64</span><br><span class="hljs-keyword">static</span> __thread tcache_perthread_struct *tcache = <span class="hljs-literal">NULL</span>;<br></code></pre></td></tr></table></figure>
+<ul>
+<li>
+<p>其中有两个重要的函数， <code>tcache_get()</code> 和 <code>tcache_put()</code>:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span><br>tcache_put (mchunkptr chunk, <span class="hljs-keyword">size_t</span> tc_idx)<br>&#123;<br>  tcache_entry *e = (tcache_entry *) chunk2mem (chunk);<br>  assert (tc_idx &lt; TCACHE_MAX_BINS);<br>  e-&gt;next = tcache-&gt;entries[tc_idx];<br>  tcache-&gt;entries[tc_idx] = e;<br>  ++(tcache-&gt;counts[tc_idx]);<br>&#125;<br><br><span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> *<br>tcache_get (<span class="hljs-keyword">size_t</span> tc_idx)<br>&#123;<br>  tcache_entry *e = tcache-&gt;entries[tc_idx];<br>  assert (tc_idx &lt; TCACHE_MAX_BINS);<br>  assert (tcache-&gt;entries[tc_idx] &gt; <span class="hljs-number">0</span>);<br>  tcache-&gt;entries[tc_idx] = e-&gt;next;<br>  --(tcache-&gt;counts[tc_idx]);<br>  <span class="hljs-keyword">return</span> (<span class="hljs-keyword">void</span> *) e;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>这两个函数会在函数 <a href="https://sourceware.org/git/gitweb.cgi?p=glibc.git;a=blob;f=malloc/malloc.c;h=2527e2504761744df2bdb1abdc02d936ff907ad2;hb=d5c3fafc4307c9b7a4c7d5cb381fcdbfad340bcc#l4173" target="_blank" rel="noopener">_int_free</a> 和 <a href="https://sourceware.org/git/gitweb.cgi?p=glibc.git;a=blob;f=malloc/malloc.c;h=2527e2504761744df2bdb1abdc02d936ff907ad2;hb=d5c3fafc4307c9b7a4c7d5cb381fcdbfad340bcc#l3051" target="_blank" rel="noopener">__libc_malloc</a> 的开头被调用，其中 <code>tcache_put</code> 当所请求的分配大小不大于<code>0x408</code>并且当给定大小的 tcache bin 未满时调用。一个 tcache bin 中的最大块数<code>mp_.tcache_count</code>是<code>7</code></p>
+<ul>
+<li>根据tcache_get()的源码</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">static</span> __always_inline <span class="hljs-keyword">void</span> *<br>tcache_get (<span class="hljs-keyword">size_t</span> tc_idx)<br>&#123;<br>  tcache_entry *e = tcache-&gt;entries[tc_idx];<br>  assert (tc_idx &lt; TCACHE_MAX_BINS);<br>  assert (tcache-&gt;entries[tc_idx] &gt; <span class="hljs-number">0</span>);<br>  tcache-&gt;entries[tc_idx] = e-&gt;next;<br>  --(tcache-&gt;counts[tc_idx]);<br>  <span class="hljs-keyword">return</span> (<span class="hljs-keyword">void</span> *) e;<br>&#125;<br></code></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+<p>在 <code>tcache_get</code> 中，仅仅检查了 <strong>tc_idx</strong> ，此外，我们可以将 tcache 当作一个类似于 fastbin 的单独链表，只是它的 check，并没有 fastbin 那么复杂，仅仅检查 <code>tcache-&gt;entries[tc_idx] = e-&gt;next;</code></p>
+<h2 id="内存申请"><a class="markdownIt-Anchor" href="#内存申请"></a> 内存申请</h2>
+<h3 id="没有tcache"><a class="markdownIt-Anchor" href="#没有tcache"></a> 没有tcache</h3>
+<p>1、获取分配区的锁，防止多线程冲突。（一个进程有一个malloc管理器，而一个进程中的多个线程共享这一个管理器，有竞争，加锁）</p>
+<p>2、计算出实际需要分配的内存的chunk实际大小。</p>
+<p>3、判断chunk的大小，如果小于max_fast（64Ｂ），则尝试去fast bins上取适合的chunk，如果有则分配结束。否则，下一步；</p>
+<p>4、判断chunk大小是否小于512B，如果是，则从small bins上去查找chunk，如果有合适的，则分配结束。否则下一步；</p>
+<p>5、ptmalloc首先会遍历fast bins（注：这里是第二次遍历fast bins了，虽然fast bins一般不会合并，但此时会）中的chunk，将相邻的chunk进行合并，并链接到unsorted bin中然后遍历 unsorted bins。（总体而言，遍历unsorted bin，只是在遍历前先合并fast bin，遍历unsorted bin时一边遍历，一边放到small bin和large bin中）</p>
+<ul>
+<li>如果unsorted bins上只有一个chunk并且大于待分配的chunk，则进行切割，并且剩余的chunk继续扔回unsorted bins；</li>
+<li>如果unsorted bins上有大小和待分配chunk相等的，则返回，并从unsorted bins删除；</li>
+<li>如果unsorted bins中的某一chunk大小 属于small bins的范围，则放入small bins的头部；</li>
+<li>如果unsorted bins中的某一chunk大小 属于large bins的范围，则找到合适的位置放入。若未分配成功，转入下一步；</li>
+</ul>
+<p>6、从large bins中查找找到合适的chunk之后，然后进行切割，一部分分配给用户，剩下的放入unsorted bin中。</p>
+<p>7、如果搜索fast bins和bins都没有找到合适的chunk，那么就需要操作top chunk来进行分配了 。当top chunk大小比用户所请求大小还大的时候，top chunk会分为两个部分：User chunk（用户请求大小）和Remainder chunk（剩余大小）。其中Remainder chunk成为新的top chunk。 当top chunk大小小于用户所请求的大小时，top chunk就通过sbrk（main arena）或mmap（thread arena）系统调用来扩容。</p>
+<p>8、到了这一步，说明 top chunk 也不能满足分配要求，所以，于是就有了两个选择: 如 果是主分配区，调用 sbrk()，增加 top chunk 大小；如果是非主分配区，调用 mmap 来分配一个新的 sub-heap，增加 top chunk 大小；或者使用 mmap()来直接分配。在 这里，需要依靠 chunk 的大小来决定到底使用哪种方法。判断所需分配的 chunk 大小是否大于等于 mmap 分配阈值，如果是的话，则转下一步，调用 mmap 分配， 否则跳到第 10 步，增加 top chunk 的大小。</p>
+<p>9、使用 mmap 系统调用为程序的内存空间映射一块 chunk_size align 4kB 大小的空间。 然后将内存指针返回给用户。</p>
+<p>10、判断是否为第一次调用 malloc，若是主分配区，则需要进行一次初始化工作，分配 一块大小为(chunk_size + 128KB) align 4KB 大小的空间作为初始的 heap。若已经初 始化过了，主分配区则调用 sbrk()增加 heap 空间，分主分配区则在 top chunk 中切 割出一个 chunk，使之满足分配需求，并将内存指针返回给用户。</p>
+<h3 id="有tcache之后"><a class="markdownIt-Anchor" href="#有tcache之后"></a> 有tcache之后</h3>
+<p>在内存分配的 malloc 函数中有多处，会将内存块移入 tcache 中。</p>
+<p>（1）首先，申请的内存块符合 fastbin 大小时并且在 fastbin 内找到可用的空闲块时，会把该 fastbin 链上的其他内存块放入 tcache 中。</p>
+<p>（2）其次，申请的内存块符合 smallbin 大小时并且在 smallbin 内找到可用的空闲块时，会把该 smallbin 链上的其他内存块放入 tcache 中。</p>
+<p>（3）当在 unsorted bin 链上循环处理时，当找到大小合适的链时，并不直接返回，而是先放到 tcache 中，继续处理。</p>
+<p><mark>举例</mark></p>
+<ul>
+<li>第一次 malloc 时，会先 malloc 一块内存用来存放 <code>tcache_prethread_struct</code></li>
+<li>free 内存，且 size 小于 small bin size 时
+<ul>
+<li>tcache 之前会放到 fastbin 或者 unsorted bin 中</li>
+<li>tcache 后：
+<ul>
+<li>先放到对应的 tcache 中，直到 tcache 被填满（默认是 7 个）</li>
+<li>tcache 被填满之后，再次 free 的内存和之前一样被放到 fastbin 或者 unsorted bin 中</li>
+<li>tcache 中的 chunk 不会合并（不取消 inuse bit）</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>malloc 内存，且 size 在 tcache 范围内
+<ul>
+<li>先从 tcache 取 chunk，直到 tcache 为空</li>
+<li>tcache 为空后，从 bin 中找</li>
+<li>tcache 为空时，如果 <code>fastbin/smallbin/unsorted bin</code> 中有 size 符合的 chunk，会先把 <code>fastbin/smallbin/unsorted bin</code> 中的 chunk 放到 tcache 中，直到填满。之后再从 tcache 中取；因此 chunk 在 bin 中和 tcache 中的顺序会反过来</li>
+</ul>
+</li>
+</ul>
+<p><a href="https://m4x.fun/post/dive-into-tcache/" target="_blank" rel="noopener">tcache源码及参考资料</a></p>
+<h2 id="内存回收"><a class="markdownIt-Anchor" href="#内存回收"></a> 内存回收</h2>
+<h3 id="没有tcache-2"><a class="markdownIt-Anchor" href="#没有tcache-2"></a> 没有tcache</h3>
+<ol>
+<li>获取分配区的锁，保证线程安全。</li>
+<li>如果free的是空指针，则返回，什么都不做。</li>
+<li>判断当前chunk是否是mmap映射区域映射的内存，如果是，则直接munmap()释放这块内存。前面的已使用chunk的数据结构中，我们可以看到有M来标识是否是mmap映射的内存。</li>
+<li>判断chunk是否与top chunk相邻，如果相邻，则直接和top chunk合并（和top chunk相邻相当于和分配区中的空闲内存块相邻）。转到步骤8</li>
+<li>如果chunk的大小大于max_fast（64b），则放入unsorted bin，并且检查是否有合并，有合并情况并且和top chunk相邻，则转到步骤8；没有合并情况则free。</li>
+<li>如果chunk的大小小于 max_fast（64b），则直接放入fast bin，fast bin并没有改变chunk的状态。没有合并情况，则free；有合并情况，转到步骤7</li>
+<li>在fast bin，如果当前chunk的下一个chunk也是空闲的，则将这两个chunk合并，放入unsorted bin上面。合并后的大小如果大于64B，会触发进行fast bins的合并操作，fast bins中的chunk将被遍历，并与相邻的空闲chunk进行合并，合并后的chunk会被放到unsorted bin中，fast bin会变为空。合并后的chunk和topchunk相邻，则会合并到topchunk中。转到步骤8</li>
+<li>判断top chunk的大小是否大于mmap收缩阈值（默认为128KB），如果是的话，对于主分配区，则会试图归还top chunk中的一部分给操作系统。free结束。</li>
+</ol>
+<h1 id="elf文件解析"><a class="markdownIt-Anchor" href="#elf文件解析"></a> ELF文件解析</h1>
+<p>首先，ELF文件格式提供了两种视图，分别是链接视图和执行视图。<img src= "/img/loading.gif" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/20160521110158483" alt="ELF Format" /></p>
+<p>链接视图是以节（section）为单位，执行视图是以段（segment）为单位。链接视图就是在链接时用到的视图，而执行视图则是在执行时用到的视图。上图左侧的视角是从链接来看的，右侧的视角是执行来看的。总个文件可以分为四个部分：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><code class="hljs plain">- ELF header： 描述整个文件的组织。<br>- Program Header Table: 描述文件中的各种segments，用来告诉系统如何创建进程映像的。<br>- sections 或者 segments：segments是从运行的角度来描述elf文件，sections是从链接的角度来描述elf文件，也就是说，在链接阶段，我们可以忽略program header table来处理此文件，在运行阶段可以忽略section header table来处理此程序（所以很多加固手段删除了section header table）。从图中我们也可以看出，segments与sections是包含的关系，一个segment包含若干个section。<br>- Section Header Table: 包含了文件各个segction的属性信息，我们都将结合例子来解释。<br></code></pre></td></tr></table></figure>
+<p><img src= "/img/loading.gif" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/20160521110434854" alt="这里写图片描述" /></p>
+<p><strong>程序头部表</strong>（Program Header Table），如果存在的话，告诉系统如何创建进程映像。<br />
+<strong>节区头部表</strong>（Section Header Table）包含了描述文件节区的信息，比如大小、偏移等。</p>
+<p><strong>尽管图中显示的各个组成部分是有顺序的，实际上除了 ELF 头部表以外，其他节区和段都没有规定的顺序</strong></p>
+<p><mark>32位ELF文件中常用的数据格式：</mark></p>
+<p>​</p>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>大小</th>
+<th>对齐</th>
+<th>目的</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Elf32_Addr</td>
+<td>4</td>
+<td>4</td>
+<td>无符号程序地址</td>
+</tr>
+<tr>
+<td>Elf32_Half</td>
+<td>2</td>
+<td>2</td>
+<td>无符号中等整数</td>
+</tr>
+<tr>
+<td>Elf32_Off</td>
+<td>4</td>
+<td>4</td>
+<td>无符号文件偏移</td>
+</tr>
+<tr>
+<td>Elf32_SWord</td>
+<td>4</td>
+<td>4</td>
+<td>有符号大整数</td>
+</tr>
+<tr>
+<td>Elf32_Word</td>
+<td>4</td>
+<td>4</td>
+<td>无符号大整数</td>
+</tr>
+<tr>
+<td>unsigned char</td>
+<td>1</td>
+<td>1</td>
+<td>无符号小整数</td>
+</tr>
+</tbody>
+</table>
+<p>ELF Header结构体:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> EI_NIDENT 16</span><br><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> &#123;</span><br>       <span class="hljs-keyword">unsigned</span> <span class="hljs-keyword">char</span> e_ident[EI_NIDENT];<br>       ELF32_Half e_type;<br>       ELF32_Half e_machine;<br>       ELF32_Word e_version;<br>       ELF32__Addr e_entry;<br>       ELF32_Off e_phoff;<br>       ELF32_Off e_shoff;<br>       ELF32_Word e_flags;<br>       ELF32_Half e_ehsize;<br>       ELF32_Half e_phentsize;<br>       ELF32_Half e_phnum;<br>       ELF32_Half e_shentsize;<br>       ELF32_Half e_shnum;<br>       ELF32_Half e_shstrndx;<br>&#125;Elf32_Ehdr;<br></code></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="code"><pre><code class="hljs c">e_ident ： ELF的一些标识信息，前四位为.ELF,其他的信息比如大小端等<br>e_machine ： 文件的目标体系架构，比如ARM<br>e_version : <span class="hljs-number">0</span>为非法版本，<span class="hljs-number">1</span>为当前版本<br>e_entry ： 程序入口的虚拟地址<br>e_phoff ： 程序头部表偏移地址<br>e_shoff ： 节区头部表偏移地址<br>e_flags ：保存与文件相关的，特定于处理器的标志<br>e_ehsize ：ELF头的大小<br>e_phentsize ： 每个程序头部表的大小<br>e_phnum ：程序头部表的数量<br>e_shentsize：每个节区头部表的大小<br>e_shnum ： 节区头部表的数量<br>e_shstrndx：节区字符串表位置<br></code></pre></td></tr></table></figure>
+<h2 id="section"><a class="markdownIt-Anchor" href="#section"></a> Section</h2>
+<p>有些节区是系统预订的，一般以点开头号，因此，我们有必要了解一些常用到的系统节区。</p>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>类型</th>
+<th>属性</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>.bss</td>
+<td>SHT_NOBITS</td>
+<td>SHF_ALLOC +  SHF_WRITE</td>
+<td>包含将出现在程序的内存映像中的为初始化数据。根据定义，当程序开始执行，系统将把这些数据初始化为 0。此节区不占用文件空间。</td>
+</tr>
+<tr>
+<td>.comment</td>
+<td>SHT_PROGBITS</td>
+<td>(无)</td>
+<td>包含版本控制信息。</td>
+</tr>
+<tr>
+<td>.data</td>
+<td>SHT_PROGBITS</td>
+<td>SHF_ALLOC + SHF_WRITE</td>
+<td>这些节区包含初始化了的数据，将出现在程序的内存映像中。</td>
+</tr>
+<tr>
+<td>.data1</td>
+<td>SHT_PROGBITS</td>
+<td>SHF_ALLOC + SHF_WRITE</td>
+<td>这些节区包含初始化了的数据，将出现在程序的内存映像中。</td>
+</tr>
+<tr>
+<td>.debug</td>
+<td>SHT_PROGBITS</td>
+<td>(无)</td>
+<td>此节区包含用于符号调试的信息。</td>
+</tr>
+<tr>
+<td>.dynamic</td>
+<td>SHT_DYNAMIC</td>
+<td></td>
+<td>此节区包含动态链接信息。节区的属性将包含 SHF_ALLOC 位。是否 SHF_WRITE 位被设置取决于处理器。</td>
+</tr>
+<tr>
+<td>.dynstr</td>
+<td>SHT_STRTAB</td>
+<td>SHF_ALLOC</td>
+<td>此节区包含用于动态链接的字符串，大多数情况下这些字符串代表了与符号表项相关的名称。</td>
+</tr>
+<tr>
+<td>.dynsym</td>
+<td>SHT_DYNSYM</td>
+<td>SHF_ALLOC</td>
+<td>此节区包含了动态链接符号表。</td>
+</tr>
+<tr>
+<td>.fini</td>
+<td>SHT_PROGBITS</td>
+<td>SHF_ALLOC + SHF_EXECINSTR</td>
+<td>此节区包含了可执行的指令，是进程终止代码的一部分。程序正常退出时，系统将安排执行这里的代码。</td>
+</tr>
+<tr>
+<td>.got</td>
+<td>SHT_PROGBITS</td>
+<td></td>
+<td>此节区包含全局偏移表。</td>
+</tr>
+<tr>
+<td>.hash</td>
+<td>SHT_HASH</td>
+<td>SHF_ALLOC</td>
+<td>此节区包含了一个符号哈希表。</td>
+</tr>
+<tr>
+<td>.init</td>
+<td>SHT_PROGBITS</td>
+<td>SHF_ALLOC + SHF_EXECINSTR</td>
+<td>此节区包含了可执行指令，是进程初始化代码的一部分。当程序开始执行时，系统要在开始调用主程序入口之前（通常指 C 语言的 main 函数）执行这些代码。</td>
+</tr>
+<tr>
+<td>.interp</td>
+<td>SHT_PROGBITS</td>
+<td></td>
+<td>此节区包含程序解释器的路径名。如果程序包含一个可加载的段，段中包含此节区，那么节区的属性将包含 SHF_ALLOC 位，否则该位为 0。</td>
+</tr>
+<tr>
+<td>.line</td>
+<td>SHT_PROGBITS</td>
+<td>(无)</td>
+<td>此节区包含符号调试的行号信息，其中描述了源程序与机器指令之间的对应关系。其内容是未定义的。</td>
+</tr>
+<tr>
+<td>.note</td>
+<td>SHT_NOTE</td>
+<td>(无)</td>
+<td>此节区中包含注释信息，有独立的格式。</td>
+</tr>
+<tr>
+<td>.plt</td>
+<td>SHT_PROGBITS</td>
+<td></td>
+<td>此节区包含过程链接表（procedure linkage table）。</td>
+</tr>
+<tr>
+<td>.relname .relaname</td>
+<td>SHT_REL SHT_RELA</td>
+<td></td>
+<td>这些节区中包含了重定位信息。如果文件中包含可加载的段，段中有重定位内容，节区的属性将包含 SHF_ALLOC 位，否则该位置 0。传统上 name 根据重定位所适用的节区给定。例如 .text  节区的重定位节区名字将是：.rel.text 或者 .rela.text。</td>
+</tr>
+<tr>
+<td>.rodata .rodata1</td>
+<td>SHT_PROGBITS</td>
+<td>SHF_ALLOC</td>
+<td>这些节区包含只读数据，这些数据通常参与进程映像的不可写段</td>
+</tr>
+<tr>
+<td>.shstrtab</td>
+<td>SHT_STRTAB</td>
+<td></td>
+<td>此节区包含节区名称。</td>
+</tr>
+<tr>
+<td>.strtab</td>
+<td>SHT_STRTAB</td>
+<td></td>
+<td>此节区包含字符串，通常是代表与符号表项相关的名称。如果文件拥有一个可加载的段，段中包含符号串表，节区的属性将包含SHF_ALLOC 位，否则该位为 0。</td>
+</tr>
+<tr>
+<td>.symtab</td>
+<td>SHT_SYMTAB</td>
+<td></td>
+<td>此节区包含一个符号表。如果文件中包含一个可加载的段，并且该段中包含符号表，那么节区的属性中包含SHF_ALLOC 位，否则该位置为 0</td>
+</tr>
+<tr>
+<td>.text</td>
+<td>SHT_PROGBITS</td>
+<td>SHF_ALLOC + SHF_EXECINSTR</td>
+<td>此节区包含程序的可执行指令。</td>
+</tr>
+</tbody>
+</table>
+<p><a href="https://blog.csdn.net/mergerly/article/details/94585901" target="_blank" rel="noopener">ELF格式详细资料</a></p>
+<h1 id="申请内存的系统调用"><a class="markdownIt-Anchor" href="#申请内存的系统调用"></a> 申请内存的系统调用</h1>
+<h2 id="程序的装载与进程的执行"><a class="markdownIt-Anchor" href="#程序的装载与进程的执行"></a> 程序的装载与进程的执行</h2>
+<h3 id="静态链接程序的执行过程"><a class="markdownIt-Anchor" href="#静态链接程序的执行过程"></a> 静态链接程序的执行过程</h3>
+<p><img src= "/img/loading.gif" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/image-20201211163826421.png" alt="image-20201211163826421" /></p>
+<p>基本执行过程可以表述为<code>创建子进程 -&gt; 开始执行该程序with argv and envp -&gt; sys_execve() -&gt; do_execve() -&gt; search_binary_handler() -&gt; load_elf_binary() -&gt; _start -&gt; main()</code>，主要表示子进程执行，加载.text节的_start，执行main函数</p>
+<h3 id="动态链接程序的执行过程"><a class="markdownIt-Anchor" href="#动态链接程序的执行过程"></a> 动态链接程序的执行过程</h3>
+<p><img src= "/img/loading.gif" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/image-20201211163854772.png" alt="image-20201211163854772" /></p>
+<p>动态与静态不同之处在于==子进程执行之后，<a href="http://xn--ld-cr5c912u.so" target="_blank" rel="noopener">加载ld.so</a>，然后才到_start，之后加载got表里的__libc_strat_main()，加载.init节，开始main函数；<code>动态链接程序装载进入内存时加载库代码解析外部引用</code>；<code>链接器在编译链接时将库代码加入到可执行程序中</code></p>
+<h1 id="保护措施"><a class="markdownIt-Anchor" href="#保护措施"></a> 保护措施</h1>
+<h2 id="1relro"><a class="markdownIt-Anchor" href="#1relro"></a> 【1】RELRO：</h2>
+<p>GOT覆盖方法，GOT覆盖之所以能成功是因为默认编译的应用程序的重定位表段对应数据区域是可写的（如got.plt），这与链接器和加载器的运行机制有关，默认情况下应用程序的导入函数只有在调用时才去执行加载（所谓的懒加载，非内联或显示通过dlxxx指定直接加载），如果让这样的数据区域属性变成只读将大大增加安全性。RELRO（read only relocation）是一种用于加强对 binary 数据段的保护的技术，大概实现由linker指定binary的一块经过dynamic linker处理过 relocation之后的区域为只读，设置符号重定向表格为只读或在程序启动时就解析并绑定所有动态符号，从而减少对GOT（Global Offset Table）攻击。</p>
+<p>RELRO会有Partial RELRO和FULL RELRO，如果开启FULL RELRO，意味着我们无法修改got表</p>
+<p>Partial RELRO</p>
+<pre><code>现在gcc 默认编译就是 partial relro
+some sections(.init_array .fini_array .jcr .dynamic .got) are marked as read-only after they have been initialized by the dynamic loader
+non-PLT GOT is read-only (.got)
+GOT is still writeable (.got.plt)
+</code></pre>
+<p>Full RELRO</p>
+<pre><code>拥有 Partial RELRO 的所有特性
+lazy resolution 是被禁止的，所有导入的符号都在 startup time 被解析
+bonus: the entire GOT is also (re)mapped as read-only or the .got.plt section is completely initialized with the final addresses of the target functions (Merge .got and .got.plt to one section .got). Moreover,since lazy resolution is not enabled, the GOT[1] and GOT[2] entries are not initialized. GOT[0] is a the address of the module’s DYNAMIC section. GOT[1] is the virtual load address of the link_map, GOT[2] is the address for the runtime resolver function。
+</code></pre>
+<h2 id="2stack"><a class="markdownIt-Anchor" href="#2stack"></a> 【2】Stack：</h2>
+<p>如果栈中开启Canary found，那么就不能用直接用溢出的方法覆盖栈中返回地址，而且要通过改写指针与局部变量、leak canary、overwrite canary的方法来绕过</p>
+<h2 id="3nx"><a class="markdownIt-Anchor" href="#3nx"></a> 【3】NX：</h2>
+<p>NX enabled如果这个保护开启就是意味着栈中数据没有执行权限，以前的经常用的call esp或者jmp esp的方法就不能使用，但是可以利用rop这种方法绕过</p>
+<h2 id="4pie"><a class="markdownIt-Anchor" href="#4pie"></a> 【4】PIE：</h2>
+<p>PIE enabled如果程序开启这个地址随机化选项就意味着程序每次运行的时候地址都会变化，而如果没有开PIE的话那么No PIE (0x400000)，括号内的数据就是程序的基地址</p>
+<h2 id="5fortify"><a class="markdownIt-Anchor" href="#5fortify"></a> 【5】FORTIFY：</h2>
+<p>FORTIFY_SOURCE机制对格式化字符串有两个限制(1)包含%n的格式化字符串不能位于程序内存中的可写地址。(2)当使用位置参数时，必须使用范围内的所有参数。所以如果要使用%7$x，你必须同时使用1,2,3,4,5和6。</p>
+<p><a href="https://www.cnblogs.com/HacTF/p/8052175.html" target="_blank" rel="noopener">参考资料</a></p>
+<h1 id="小技巧"><a class="markdownIt-Anchor" href="#小技巧"></a> 小技巧</h1>
+<h2 id="检查保护"><a class="markdownIt-Anchor" href="#检查保护"></a> 检查保护</h2>
+<p>checksec</p>
+<h2 id="查找system函数的plt地址"><a class="markdownIt-Anchor" href="#查找system函数的plt地址"></a> 查找system函数的plt地址</h2>
+<p>objdump -d -j .plt ./xx |grep system</p>
+<h2 id="查找bin_sh字符串地址"><a class="markdownIt-Anchor" href="#查找bin_sh字符串地址"></a> 查找bin_sh字符串地址</h2>
+<p>ROPgadget --binary ./xx --string “/bin/sh”</p>
+<h2 id="替换alarm函数"><a class="markdownIt-Anchor" href="#替换alarm函数"></a> 替换alarm函数</h2>
+<p>sed -i s/alarm/isnan/g ./pwn</p>
+<h2 id="environ泄露栈地址"><a class="markdownIt-Anchor" href="#environ泄露栈地址"></a> environ泄露栈地址</h2>
+<p>libc 中定义的全局变量 <code>environ</code> 指向环境变量表。而环境变量表存在于栈上，所以通过 <code>environ</code> 指针的值就可以泄露出栈地址。</p>
+<p>peda：vmmap libc -&gt;vmmap stack -&gt;shell nm -D YOURLIBC | grep environ -&gt; x/gx environOffset + libcAddress(in vmmap libc) =point to address(EnvironAddress) -&gt; x/5gx EnvironAddress(get StackAddress)  -&gt; x/5s StackAddress</p>
+<h2 id="查看chunk信息"><a class="markdownIt-Anchor" href="#查看chunk信息"></a> 查看chunk信息</h2>
+<p>p/x *(struct malloc_chunk*)Address</p>
+<h1 id="libc利用思路"><a class="markdownIt-Anchor" href="#libc利用思路"></a> libc利用思路</h1>
+<p>获取方法：GOT，栈，堆</p>
+<p>GOT：已知函数的address与offset相减，得到libc的offset(libc base)；libc offset(base) 与system offset 相加得到 system address</p>
+<h1 id="uaf"><a class="markdownIt-Anchor" href="#uaf"></a> UAF</h1>
+<ul>
+<li>和chunk,bin等heap的内部操作没有什么关系</li>
+<li><code>思路:</code>让程序有两个指针指向同一块内存
+<ul>
+<li>一块是structure, 另一块是用作data buffer</li>
+<li>利用对buffer的读写, 修改或泄露structure的内容</li>
+</ul>
+</li>
+<li>重新malloc(=q)一样的大小,会拿到曾经free掉得chunk, 此时就存在两个指针p,q指向同一块内存,使用这两个指针的操作会混在一起
+<ul>
+<li>例如:  C++程序, 有vtable指针用来找出实际的function. 如果另一个是可写入的data buffer, 就可以改掉 function pointer</li>
+</ul>
+</li>
+<li>只要实际的chunk size 相同, malloc 要求的大小不同也没关系</li>
+<li>会拿出哪个chunk, 取决于heap里bin的运作方式,不一定是最近free的那个</li>
+</ul>
+<h1 id="fastbin-corruption"><a class="markdownIt-Anchor" href="#fastbin-corruption"></a> Fastbin Corruption</h1>
+<h2 id="fastbin-2"><a class="markdownIt-Anchor" href="#fastbin-2"></a> Fastbin</h2>
+<ul>
+<li>
+<p>Chunk size&lt;= get_max_fast()的chunk,会被放在一系列称为fastbin 的bin里</p>
+<ul>
+<li>64bit是128 bytes , 32 bit是64 bytes</li>
+<li>global_max_fast一开始是0</li>
+</ul>
+</li>
+<li>
+<p>Fastbin是 single linked list，只使用fd,以NULL结尾.</p>
+</li>
+<li>
+<p>LIFO</p>
+</li>
+<li>
+<p>Chunk size 32(实际使用可以使用24) 从开始, 共7个可用的 fastbin,管理 16、24、32、40、48、56、64 Bytes 的 free chunks（32位下默认）[初始化]. 最大到88 Bytes</p>
+</li>
+<li>
+<p>free时不取消下个chunk的prev_inuse bit, 因为Fastbin chunk 不会和其他chunk合并</p>
+</li>
+<li>
+<p>malloc, free操作时glibc会有些检查,确认heap metadata 是否正确, 避免一些可能的攻击方式</p>
+</li>
+<li>
+<p>为了执行效率, fastbin 里的检查比其他类型的bin 少很多</p>
+</li>
+<li>
+<p>malloc时, Fastbin 是从头开始遍历的, 因为是单向链表</p>
+</li>
+<li>
+<p>其中的 chunk 的 in_use 位（下一个物理相邻的 chunk 的 P 位）总为1</p>
+</li>
+</ul>
+<h3 id="fastbin-sanity-check检查机制"><a class="markdownIt-Anchor" href="#fastbin-sanity-check检查机制"></a> Fastbin Sanity Check(检查机制)</h3>
+<ul>
+<li>malloc 从 bin 里取出时, 要从正确的 bin 里拿出来, 即chunk size 要正确</li>
+<li>free时, nextchunk的size要正确</li>
+<li>free时会检查 bin 里第一个 chunk 是不是要跟当前要free的这一个相同(fasttop)</li>
+</ul>
+<h2 id="fastbin-corruption-2"><a class="markdownIt-Anchor" href="#fastbin-corruption-2"></a> Fastbin Corruption</h2>
+<ul>
+<li>让fastbin linked list指向任意位置, 之后malloc时就会将该位置做为chunk拿出来</li>
+<li>Freed (not inuse) chunk才会存在bin里, 修改它的fd才会造成corruption</li>
+</ul>
+<h1 id="fastbin-double-free"><a class="markdownIt-Anchor" href="#fastbin-double-free"></a> Fastbin Double free</h1>
+<ul>
+<li>
+<p>Fasttop只检查bin里面第一个chunk,只要不是连续free同一个chunk就没有问题</p>
+<ul>
+<li>比如:free§;free(q);free§;</li>
+</ul>
+</li>
+<li>
+<p>可以造成类似use  after free 的效果, 可以改掉还在bin里的chunk之fd栏位</p>
+</li>
+<li>
+<p>FastBin是由fd串起来的linked list, 该掉fd可以让linked list接往任意地址, 多次malloc后, 就会拿到一个位置可以控制的chunk</p>
+</li>
+<li>
+<p>取出来的chunk其size栏位要正确, 所以并非是完全任意地址, 要能构造假的size</p>
+<ul>
+<li>用stack上的变量当做size, 可以malloc出一个stack上的地址</li>
+<li>GOT上, 用64bit位地址常见的0x40当做size</li>
+</ul>
+</li>
+<li>
+<p>取得chunk后, 有机会对该地址任意读写</p>
+<p><img src= "/img/loading.gif" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/image-20201214173531508.png" alt="image-20201214173531508" /></p>
+</li>
+</ul>
+<h1 id="heap-overflow"><a class="markdownIt-Anchor" href="#heap-overflow"></a> Heap Overflow</h1>
+<ul>
+<li>如果有heap overflow, 可以覆盖下个chunk的fd指针</li>
+<li>先free掉下一个chunk再进行overflow</li>
+<li>overflow时要注意下个chunk的size是否正确</li>
+<li>跳转got,改掉got,执行改掉的函数,getshell</li>
+</ul>
+<p><img src= "/img/loading.gif" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/image-20201217141934611.png" alt="image-20201217141934611" /></p>
+<h1 id="fastbin-house-of-spirit"><a class="markdownIt-Anchor" href="#fastbin-house-of-spirit"></a> Fastbin House of spirit</h1>
+<p>House of Spirit 是 <code>the Malloc Maleficarum</code> 中的一种技术。</p>
+<p>该技术的核心在于在目标位置处伪造 fastbin chunk，并将其释放，从而达到分配<strong>指定地址</strong>的 chunk 的目的。</p>
+<p>​	要想构造 fastbin fake chunk，并且将其释放时，可以将其放入到对应的 fastbin 链表中，需要绕过一些必要的检测，即</p>
+<ul>
+<li>fake chunk 的 ISMMAP 位不能为 1，因为 free 时，如果是 mmap 的 chunk，会单独处理。</li>
+<li>fake chunk 地址需要对齐， MALLOC_ALIGN_MASK</li>
+<li>fake chunk 的 size 大小需要满足对应的 fastbin 的需求，同时也得对齐。</li>
+<li>fake chunk 的 next chunk 的大小不能小于 <code>2 * SIZE_SZ</code>，同时也不能大于<code>av-&gt;system_mem</code> 。</li>
+<li>fake chunk 对应的 fastbin 链表头部不能是该 fake chunk，即不能构成 double free 的情况。</li>
+</ul>
+<p>其他overflow可以改掉一个原本由malloc得到的指针p, free§时就会使得被改掉的指针进入fastbin, 下次malloc时就会拿到<img src= "/img/loading.gif" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/image-20201217145458950.png" alt="image-20201217145458950" /></p>
+<h1 id="unlink-exploitation"><a class="markdownIt-Anchor" href="#unlink-exploitation"></a> Unlink Exploitation</h1>
+<ul>
+<li>合并freed chunks</li>
+</ul>
+<p>非Fastbin chunk 在free掉时, 会和前后的freed chunks合并</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><code class="hljs c">   <span class="hljs-comment">/* consolidate backward */</span><br>   <span class="hljs-keyword">if</span> (!prev_inuse(p)) &#123;<br>     prevsize = prev_size (p);<br>     <span class="hljs-built_in">size</span> += prevsize;<br>     p = chunk_at_offset(p, -((<span class="hljs-keyword">long</span>) prevsize));<br>     <span class="hljs-keyword">if</span> (__glibc_unlikely (chunksize(p) != prevsize))<br>       malloc_printerr (<span class="hljs-string">"corrupted size vs. prev_size while consolidating"</span>);<br>     unlink_chunk (av, p);<br>   &#125;<br><br>   <span class="hljs-keyword">if</span> (nextchunk != av-&gt;top) &#123;<br>     <span class="hljs-comment">/* get and clear inuse bit */</span><br>     nextinuse = inuse_bit_at_offset(nextchunk, nextsize);<br><br>     <span class="hljs-comment">/* consolidate forward */</span><br>     <span class="hljs-keyword">if</span> (!nextinuse) &#123;<br>unlink_chunk (av, nextchunk);<br><span class="hljs-built_in">size</span> += nextsize;<br>     &#125; <span class="hljs-keyword">else</span><br>clear_inuse_bit_at_offset(nextchunk, <span class="hljs-number">0</span>);<br></code></pre></td></tr></table></figure>
+<ul>
+<li>unlink()是用来把chunk移出bin用的, 从double linked-list移除</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> unlink(P, BK, FD)&#123;\\简化版本</span><br>	BK=p-&gt;bk;<br>	FD=p-&gt;fd;<br>	BK-&gt;fd=FD;<br>	FD-&gt;bk=BK;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>利用unlink()</p>
+<ul>
+<li>如果有overflow可以覆盖到某个chunk q的 prevsize, free q时传入unlink§的p可以控制</li>
+<li>慎选p使得chunk p的内容也可控制</li>
+<li>利用FD-&gt;bk = BK和BK-&gt;fd = FD, 可以同时写入两个目标, 例如:
+<ul>
+<li>FD = p-&gt;fd = free@got.plt - 0x18</li>
+<li>BK = p-&gt;bk = shellcode</li>
+</ul>
+</li>
+<li>现在版本: 实际的unlink会检查double linked-list 是不是合法
+<ul>
+<li>指过去要能指回来, 即p-&gt;fd-&gt;bk == p</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-meta-keyword">define</span> unlink(P, BK, FD) &#123;</span><br>	FD = p-&gt;fd;<br>	BK = p-&gt;bk;<br>	<span class="hljs-keyword">if</span> (FD-&gt;bk !=P || BK-&gt;fd !=P)<br>		malloc_printerr(check_action, <span class="hljs-string">"corrupted d..."</span>, P);<br>	<span class="hljs-keyword">else</span> &#123;<br>		FD-&gt;bk = BK;<br>		BK-&gt;fd = FD;<br>		&#125;<br>	&#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<ul>
+<li>Overwrite Heap Pointer
+<ul>
+<li>实际上unlink的检查还是有方法绕过, 而且可以得到一种很实用的利用方式</li>
+<li>需要有:
+<ul>
+<li>一个指向heap内的指针</li>
+<li>存放该指针的位置已知(例如: 该指针是全局变量)</li>
+<li>可以对该指针写入多次</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h1 id="伪造arena"><a class="markdownIt-Anchor" href="#伪造arena"></a> 伪造Arena</h1>
+<ul>
+<li>平常使用的arena是在libc内部的main_arena变量</li>
+<li>malloc时其实会根据tls段上面的某段指针, 决定要使用的arena</li>
+<li>mmap chunk overflow时可以盖掉arena指针
+<ul>
+<li>tls段上还有stack address, stack guard canary</li>
+</ul>
+</li>
+<li>伪造arena的Fastbin部分, 使得下次malloc时可以取得伪造的chunk</li>
+<li>这个利用方式需要任意大小的malloc,但是不需要free</li>
+</ul>
+</div><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">z3lce</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://www.infore.top/2020/12/22/PWN%E5%9F%BA%E7%A1%80%E5%92%8C%E6%8A%80%E5%B7%A7/">http://www.infore.top/2020/12/22/PWN基础和技巧/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://www.infore.top" target="_blank">z3lce学习记录</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%9F%BA%E7%A1%80/">基础</a></div><div class="post_share"><div class="social-share" data-image="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/20200719093802.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css"/><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js"></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2020/12/04/%E5%AE%89%E5%85%A8%E5%80%BC%E5%AE%88%E6%9C%8D%E5%8A%A1and%E6%97%A5%E5%BF%97%E5%88%86%E6%9E%90/"><img class="next-cover" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/20200719094148.png" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">安全值守服务and日志分析</div></div></a></div></nav></article></main><footer id="footer" data-type="color"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2021 By z3lce</div><div class="framework-info"><span>驱动 </span><a href="https://hexo.io" target="_blank" rel="noopener"><span>Hexo</span></a><span class="footer-separator">|</span><span>主题 </span><a href="https://github.com/jerryc127/hexo-theme-butterfly" target="_blank" rel="noopener"><span>Butterfly</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><button id="readmode" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="font_plus" title="放大字体"><i class="fas fa-plus"></i></button><button id="font_minus" title="缩小字体"><i class="fas fa-minus"></i></button><button class="translate_chn_to_cht" id="translateLink" title="简繁转换">繁</button><button id="darkmode" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button></div><div id="rightside-config-show"><button id="rightside_config" title="设置"><i class="fas fa-cog"></i></button><button class="close" id="mobile-toc-button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></section><div class="search-dialog" id="local-search"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>由</span> <a href="https://github.com/wzpan/hexo-generator-search" target="_blank" rel="noopener" style="color:#49B1F5;">hexo-generator-search</a>
+ <span>提供支持</span></div></div></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div class="search-mask"></div><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="https://cdn.jsdelivr.net/npm/animejs@latest/anime.min.js"></script><script src="/js/third-party/fireworks.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script defer id="ribbon" src="/js/third-party/canvas-ribbon.js" size="150" alpha="0.6" zIndex="-1" mobile="true" data-click="true"></script><script id="ribbon_piao" mobile="true" src="/js/third-party/piao.js"></script><script src="/js/third-party/activate-power-mode.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module" defer></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js" async></script><script src="/js/search/local-search.js"></script><script>var endLoading = function () {
+  document.body.style.overflow = 'auto';
+  document.getElementById('loading-box').classList.add("loaded")
+}
+window.addEventListener('load',endLoading)</script></body></html>

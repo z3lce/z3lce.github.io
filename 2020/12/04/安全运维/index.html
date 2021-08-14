@@ -1,0 +1,534 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>安全运维 | z3lce学习记录</title><meta name="description" content="安全运维服务介绍  通过采用合适的安全技术、安全管理措施、安全设备和既定规则，对网络和信息系统进行有效的防护 做到事前预知、实时告知、有效处理、灾难恢复、持续改进 安全运维服务分为：驻场运维服务、安全巡检服务两种  驻场运维服务  基本概念  指派安全技术人员与客户指定场所现场办公地点，进行安全设备监控、安全巡检、安全日志分析、应急处置等与运维相关的工作有专业的人员从事专业工作，最大化节省客户人"><meta name="keywords" content="安全运维"><meta name="author" content="z3lce"><meta name="copyright" content="z3lce"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://www.infore.top/2020/12/04/%E5%AE%89%E5%85%A8%E8%BF%90%E7%BB%B4/"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//fonts.googleapis.com" crossorigin="crossorigin"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><meta name="360-site-verification" content="{&quot;theme_color&quot;:{&quot;enable&quot;:true,&quot;main&quot;:&quot;#49B1F5&quot;,&quot;paginator&quot;:&quot;#00c4b6&quot;,&quot;button_hover&quot;:&quot;#FF7242&quot;,&quot;text_selection&quot;:&quot;#00c4b6&quot;,&quot;link_color&quot;:&quot;#99a9bf&quot;,&quot;meta_color&quot;:&quot;#858585&quot;,&quot;hr_color&quot;:&quot;#A4D8FA&quot;,&quot;code_foreground&quot;:&quot;#F47466&quot;,&quot;code_background&quot;:&quot;rgba(27, 31, 35, .05)&quot;,&quot;toc_color&quot;:&quot;#00c4b6&quot;,&quot;blockquote_padding_color&quot;:&quot;#49b1f5&quot;,&quot;blockquote_background_color&quot;:&quot;#49b1f5&quot;}}"/><meta property="og:type" content="article"><meta property="og:title" content="安全运维"><meta property="og:url" content="http://www.infore.top/2020/12/04/%E5%AE%89%E5%85%A8%E8%BF%90%E7%BB%B4/"><meta property="og:site_name" content="z3lce学习记录"><meta property="og:description" content="安全运维服务介绍  通过采用合适的安全技术、安全管理措施、安全设备和既定规则，对网络和信息系统进行有效的防护 做到事前预知、实时告知、有效处理、灾难恢复、持续改进 安全运维服务分为：驻场运维服务、安全巡检服务两种  驻场运维服务  基本概念  指派安全技术人员与客户指定场所现场办公地点，进行安全设备监控、安全巡检、安全日志分析、应急处置等与运维相关的工作有专业的人员从事专业工作，最大化节省客户人"><meta property="og:image" content="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/20200719093643.png"><meta property="article:published_time" content="2020-12-04T04:42:31.000Z"><meta property="article:modified_time" content="2020-12-04T04:42:31.000Z"><meta name="twitter:card" content="summary"><script>var activateDarkMode = function () {
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null) {
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', '#000')
+  }
+}
+var activateLightMode = function () {
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null) {
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', '#fff')
+  }
+}
+
+var getCookies = function (name) {
+  const value = `; ${document.cookie}`
+  const parts = value.split(`; ${name}=`)
+  if (parts.length === 2) return parts.pop().split(';').shift()
+}
+
+var autoChangeMode = 'false'
+var t = getCookies('theme')
+if (autoChangeMode === '1') {
+  var isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+  var isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+  var isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+  var hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+  if (t === undefined) {
+    if (isLightMode) activateLightMode()
+    else if (isDarkMode) activateDarkMode()
+    else if (isNotSpecified || hasNoSupport) {
+      console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+      var now = new Date()
+      var hour = now.getHours()
+      var isNight = hour <= 6 || hour >= 18
+      isNight ? activateDarkMode() : activateLightMode()
+    }
+    window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+      if (Cookies.get('theme') === undefined) {
+        e.matches ? activateDarkMode() : activateLightMode()
+      }
+    })
+  } else if (t === 'light') activateLightMode()
+  else activateDarkMode()
+} else if (autoChangeMode === '2') {
+  now = new Date()
+  hour = now.getHours()
+  isNight = hour <= 6 || hour >= 18
+  if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode()
+} else {
+  if (t === 'dark') activateDarkMode()
+  else if (t === 'light') activateLightMode()
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css"><link rel="prev" title="安全值守服务and日志分析" href="http://www.infore.top/2020/12/04/%E5%AE%89%E5%85%A8%E5%80%BC%E5%AE%88%E6%9C%8D%E5%8A%A1and%E6%97%A5%E5%BF%97%E5%88%86%E6%9E%90/"><link rel="next" title="安全加固" href="http://www.infore.top/2020/12/04/%E5%AE%89%E5%85%A8%E5%8A%A0%E5%9B%BA/"><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web&amp;display=swap"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容:${query}"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  runtime: true,
+  copyright: {"languages":{"author":"作者: z3lce","link":"链接: ","source":"来源: z3lce学习记录","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  ClickShowText: undefined,
+  medium_zoom: false,
+  fancybox: true,
+  Snackbar: {"bookmark":{"message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#121212","position":"bottom-left"},
+  justifiedGallery: {
+    js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+    css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+  },
+  baiduPush: false,
+  highlightCopy: true,
+  highlightLang: true,
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isanchor: false    
+}</script><script>var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isSidebar: true
+  }</script><noscript><style>
+#nav {
+  opacity: 1
+}
+.justified-gallery img{
+  opacity: 1
+}
+</style></noscript><link rel="stylesheet" href="/css/background.css"><meta name="generator" content="Hexo 4.2.1"></head><body><script type="text/javascript" src="/js/crash_cheat.js"></script><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><canvas class="fireworks"></canvas><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="avatar-img" src="/img/avatar.gif" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="mobile_post_data"><div class="mobile_data_item is-center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">14</div></a></div></div><div class="mobile_data_item is-center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">12</div></a></div></div><div class="mobile_data_item is-center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">10</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div></div></div><i class="fas fa-arrow-right on" id="toggle-sidebar"></i><div id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#安全运维服务介绍"><span class="toc-number">1.</span> <span class="toc-text"> 安全运维服务介绍</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#安全运维服务内容"><span class="toc-number">2.</span> <span class="toc-text"> 安全运维服务内容</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#安全运维体系"><span class="toc-number">3.</span> <span class="toc-text"> 安全运维体系</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#安全运维管理"><span class="toc-number">4.</span> <span class="toc-text"> 安全运维管理</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#安全运维目标"><span class="toc-number">5.</span> <span class="toc-text"> 安全运维目标</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#安全运维实例"><span class="toc-number">6.</span> <span class="toc-text"> 安全运维实例</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#实例一"><span class="toc-number">6.1.</span> <span class="toc-text"> 实例一</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#设备硬件故障"><span class="toc-number">6.1.1.</span> <span class="toc-text"> 设备硬件故障</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#实例二"><span class="toc-number">6.2.</span> <span class="toc-text"> 实例二</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#设备配置问题"><span class="toc-number">6.2.1.</span> <span class="toc-text"> 设备配置问题</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#实例三"><span class="toc-number">6.3.</span> <span class="toc-text"> 实例三</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ids告警事件"><span class="toc-number">6.3.1.</span> <span class="toc-text"> IDS告警事件</span></a></li></ol></li></ol></li></ol></div></div></div><div id="body-wrap"><div id="web_bg" data-type="color"></div><header class="post-bg" id="page-header" style="background-image: url(https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/20200719093643.png)"><nav id="nav"><span class="pull-left" id="blog_name"><a class="blog_title" id="site-name" href="/">z3lce学习记录</a></span><span class="pull-right menus"><div id="search_button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div><span class="toggle-menu close"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></span></span></nav><div id="post-info"><div id="post-title"><div class="posttitle">安全运维</div></div><div id="post-meta"><div class="meta-firstline"><time class="post-meta__date"><span class="post-meta__date-created" title="发表于 2020-12-04 12:42:31"><i class="far fa-calendar-alt fa-fw"></i> 发表于 2020-12-04</span><span class="post-meta__separator">|</span><span class="post-meta__date-updated" title="更新于 2020-12-04 12:42:31"><i class="fas fa-history fa-fw"></i> 更新于 2020-12-04</span></time><span class="post-meta__categories"><span class="post-meta__separator">|</span><i class="fas fa-inbox fa-fw post-meta__icon"></i><a class="post-meta__categories" href="/categories/%E5%AE%89%E5%85%A8%E6%9C%8D%E5%8A%A1/">安全服务</a></span></div><div class="meta-secondline"> <span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta__icon"></i><span>字数总计:</span><span class="word-count">2.8k</span><span class="post-meta__separator">|</span><i class="far fa-clock fa-fw post-meta__icon"></i><span>阅读时长: 8 分钟</span></span></div><div class="meta-thirdline"><span class="post-meta-pv-cv"><span class="post-meta__separator">|</span><i class="far fa-eye fa-fw post-meta__icon"></i><span>阅读量:</span><span id="busuanzi_value_page_pv"></span></span><span class="post-meta-commentcount"></span></div></div></div></header><main class="layout_post" id="content-inner"><article id="post"><div class="post-content" id="article-container"><h1 id="安全运维服务介绍"><a class="markdownIt-Anchor" href="#安全运维服务介绍"></a> 安全运维服务介绍</h1>
+<ul>
+<li>通过采用合适的安全技术、安全管理措施、安全设备和既定规则，对网络和信息系统进行有效的防护</li>
+<li>做到事前预知、实时告知、有效处理、灾难恢复、持续改进</li>
+<li>安全运维服务分为：驻场运维服务、安全巡检服务两种
+<ul>
+<li>驻场运维服务
+<ul>
+<li>基本概念
+<ul>
+<li>指派安全技术人员与客户指定场所现场办公地点，进行安全设备监控、安全巡检、安全日志分析、应急处置等与运维相关的工作有专业的人员从事专业工作，最大化节省客户人力资源成本，充分保障客户IT系统、网络及业务的顺畅运行</li>
+</ul>
+</li>
+<li>服务的必要性
+<ul>
+<li>驻场运维是日常IT运维团队解决安全问题的一种很好的补充，特别是在重大国际、国内活动对突发安全事件需要快速解决处理的场景中，往往能赶到突出作用，同时依据驻场运维工作内容的不同，专业人员往往可以发现一些隐藏的安全风险。例如日志分析中，可能会发现日常隐藏的、潜藏的、不安全的网络、黑客攻击行为</li>
+</ul>
+</li>
+<li>服务内容
+<ul>
+<li>安全设备监控、安全巡检、安全日志分析、应急处置</li>
+</ul>
+</li>
+<li>服务特点
+<ul>
+<li>驻场运维侧重于最大化利用专业资源，将复杂、综合的安全技术工作交给专职的技术人员，更好的提高投入产出效益</li>
+</ul>
+</li>
+<li>服务报告
+<ul>
+<li>日报、周报、月报、年度报告等</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>驻场运维服务流程
+<ul>
+<li>驻场前准备
+<ul>
+<li>驻场支持申请-&gt;明确驻场工作内容和范围-&gt;确认时间、地点、联系人-&gt;</li>
+</ul>
+</li>
+<li>驻场值守实施
+<ul>
+<li>-&gt;根据合同内容，完成现场驻场工作-&gt;</li>
+</ul>
+</li>
+<li>现场驻场报告与汇报
+<ul>
+<li>-&gt;驻场记录整理-&gt;报告输出与提交-&gt;整体汇报</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>安全巡检服务
+<ul>
+<li>基本概念
+<ul>
+<li>使用多种手段，对网络设备、服务器、操作系统、应用系统进行周期性状态检查、安全扫描、日志分析、补丁管理并提交巡检报告及安全建议</li>
+</ul>
+</li>
+<li>服务的必要性
+<ul>
+<li>定期的安全巡检是日常IT运维中重要的一环，因为安全漏洞会不断出现，通过安全巡检能够发现新出现的漏洞，同时通过补丁安装修补漏洞。通过安全状态检查和版本更新，能够使网络安全设备一直处于良好运行状态，通过日志分析能够发现网络中的异常事件，根据异常事件的特点进行对应的安全策略降低安全威胁。安全巡检服务可以周期性的对目前整体的网络状态包括网络设备、服务器设备等进行快速、简易的周期性安全评估，对了解、掌握目前网络、系统安全状况和风险防范起到了积极的推动作用</li>
+</ul>
+</li>
+<li>服务内容
+<ul>
+<li>安全设备状态检查、安全漏洞扫描、安全日志分析、补丁管理等</li>
+</ul>
+</li>
+<li>服务特点
+<ul>
+<li>全程化服务，有效保证服务质量、专家级解决方案，一切以解决问题为目标、降低成本，节省投资</li>
+</ul>
+</li>
+<li>服务报告
+<ul>
+<li>《XX系统安全巡检报告》、《XX月度、季度安全巡检报告》等</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>安全巡检服务流程
+<ul>
+<li><img src= "/img/loading.gif" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/image-20201127103009618.png" alt="image-20201127103009618" /></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h1 id="安全运维服务内容"><a class="markdownIt-Anchor" href="#安全运维服务内容"></a> 安全运维服务内容</h1>
+<ul>
+<li>漏洞扫描
+<ul>
+<li>准备阶段
+<ul>
+<li>前期技术交流-&gt;确定扫描范围、目标-&gt;确定扫描方案-&gt;</li>
+</ul>
+</li>
+<li>扫描过程
+<ul>
+<li>-&gt;漏洞扫描实施-&gt;漏洞分析-&gt;漏洞验证-&gt;</li>
+</ul>
+</li>
+<li>汇报阶段
+<ul>
+<li>扫描数据整理</li>
+<li>提交漏洞扫描报告</li>
+<li>内容沟通</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>配置核查
+<ul>
+<li>服务方式：本地登录系统</li>
+<li>服务工具：配置核查系统、绿盟科技安全配置检查checklist</li>
+<li>服务内容：抽样检查系统的策略配置、服务配置、保护措施以及系统和软件升级、更新情况，是否存在漏洞或后门等</li>
+<li>输出文档：配置检查报告</li>
+</ul>
+</li>
+<li>渗透测试
+<ul>
+<li>服务方式：工具测试、手工验证</li>
+<li>服务工具：APPScan、burpsuite、Nmap等</li>
+<li>测试流程：收集扫描对象信息，使用扫描工具对扫描对象进行扫描探测，对扫描出来的漏洞进行验证，能力强经验多的工程师也可以手工进行漏洞挖掘</li>
+<li>输出文档：渗透测试报告</li>
+</ul>
+</li>
+<li>网络架构分析
+<ul>
+<li>采集资料
+<ul>
+<li>了解网络安全状况</li>
+</ul>
+</li>
+<li>架构分析
+<ul>
+<li>分析安全防范短板</li>
+</ul>
+</li>
+<li>问题反馈
+<ul>
+<li>网络架构分析报告</li>
+</ul>
+</li>
+<li>结构整改
+<ul>
+<li>充分满足合规要求</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>安全加固
+<ul>
+<li>加固项目
+<ul>
+<li>漏洞修复</li>
+<li>文件系统权限增强</li>
+<li>防DDOS攻击增强</li>
+<li>访问控制策略增强</li>
+<li>认证和授权策略调整</li>
+<li>系统权限增强</li>
+<li>网络与服务加固</li>
+<li>日志审核功能增强</li>
+<li>账号和口令加固</li>
+<li>剩余信息保护</li>
+</ul>
+</li>
+<li>输出报告
+<ul>
+<li>安全加固报告</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>设备巡检
+<ul>
+<li>检查方式
+<ul>
+<li>本地登录系统</li>
+</ul>
+</li>
+<li>检查内容
+<ul>
+<li>检查设备CPU、内存、硬盘、接口、服务和证书等是否正常，检查完后填写设备检查表</li>
+</ul>
+</li>
+<li>设备升级
+<ul>
+<li>检查设备引擎、规则库、URL分类库、病毒特征库等是否有更新，设备设置自动升级或手动到官网下载升级包升级，设置升级需要经过客户同意方可进行</li>
+</ul>
+</li>
+<li>输出文档
+<ul>
+<li>设备巡检报告</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>日志分析
+<ul>
+<li>分析方式
+<ul>
+<li>登录设备导出日志</li>
+</ul>
+</li>
+<li>日志分析
+<ul>
+<li>筛选其中<mark>高、中风险</mark>事件，查看告警事件的详细信息，根据源地址、目的地址、端口、所属区域及触发的操作等分析该事件是否属于攻击事件，查看是否有删除、修改、上传等动作，验证操作是否成功，是否对系统造成影响</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>网站安全监测
+<ul>
+<li>漏洞扫描
+<ul>
+<li>深入检测web应用，直观呈现网站漏洞风险</li>
+</ul>
+</li>
+<li>挂马监测
+<ul>
+<li>检索web应用各个页面，挖掘隐藏木马</li>
+</ul>
+</li>
+<li>敏感内容监测
+<ul>
+<li>监测站点敏感内容，避免法律风险</li>
+</ul>
+</li>
+<li>域名监测
+<ul>
+<li>及时发现域名解析异常，保障网站可正常访问</li>
+</ul>
+</li>
+<li>性能监测
+<ul>
+<li>监测站点运营状况，提升访问者满意度</li>
+</ul>
+</li>
+<li>篡改监测
+<ul>
+<li>未雨绸缪，预防恶意篡改，维护开锅和公信力</li>
+</ul>
+</li>
+<li>钓鱼监测
+<ul>
+<li>及时发现、屏蔽、关停钓鱼站点，保护访问者利益</li>
+</ul>
+</li>
+<li>输出报告：网站监测记录</li>
+</ul>
+</li>
+<li>应急响应
+<ul>
+<li>服务方式
+<ul>
+<li>一次性服务</li>
+<li>远程服务</li>
+<li>单次服务</li>
+<li>年度服务</li>
+</ul>
+</li>
+<li>服务内容
+<ul>
+<li>网络阻塞、DDOS攻击问题</li>
+<li>恶意入侵、黑客攻击问题</li>
+<li>病毒爆发问题</li>
+<li>内部安全事故</li>
+</ul>
+</li>
+<li>成果流程
+<ul>
+<li>事件响应</li>
+<li>应急响应实施</li>
+<li>输出应急处置报告</li>
+</ul>
+</li>
+<li>应急响应流程
+<ul>
+<li><img src= "/img/loading.gif" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/image-20201127111607420.png" alt="image-20201127111607420" /></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h1 id="安全运维体系"><a class="markdownIt-Anchor" href="#安全运维体系"></a> 安全运维体系</h1>
+<p><img src= "/img/loading.gif" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/image-20201127113257415.png" alt="image-20201127113257415" /></p>
+<p>安全技术支撑：预防P、发现D、恢复R</p>
+<p>安全监控和基础维护：响应R</p>
+<ul>
+<li>安全监控和基础维护</li>
+<li>集中的安全技术支撑队伍</li>
+<li>围绕“积极预防、及时发现、积极响应、确认恢复”四个环节，形成分层、闭环的维护体系</li>
+<li>锻造一支专业的网络与信息安全队伍</li>
+</ul>
+<h1 id="安全运维管理"><a class="markdownIt-Anchor" href="#安全运维管理"></a> 安全运维管理</h1>
+<p>安全目标遵循的PDCA闭环执行过程</p>
+<ul>
+<li>PLAN
+<ul>
+<li>安全目标要求–安全现状</li>
+<li>安全计划–（建设，维护等）</li>
+</ul>
+</li>
+<li>DO
+<ul>
+<li>安全项目建设</li>
+<li>安全维护作业
+<ol>
+<li>更新资产补丁\拓扑\服务等状态</li>
+<li>安全事件通报</li>
+<li>安全加固</li>
+<li>更新安全现状和安全目标要求差距</li>
+<li>其他</li>
+</ol>
+</li>
+</ul>
+</li>
+<li>CHECK
+<ul>
+<li>日常安全检查</li>
+<li>周期性安全评估
+<ol>
+<li>检查安全目标要求的完成状态</li>
+<li>评估安全状况（资产状态，弱点状态）</li>
+<li>安全现状是否符合可控安全环境</li>
+</ol>
+</li>
+</ul>
+</li>
+<li>ACTION
+<ul>
+<li>调整安全目标要求</li>
+<li>规划安全项目</li>
+<li>绩效考核各个部门、安全管理员</li>
+</ul>
+</li>
+</ul>
+<h1 id="安全运维目标"><a class="markdownIt-Anchor" href="#安全运维目标"></a> 安全运维目标</h1>
+<ul>
+<li>高效管理能力</li>
+<li>全面运维能力</li>
+<li>安全保护能力</li>
+<li>隐患发现能力</li>
+<li>应急响应能力</li>
+<li>快速恢复能力</li>
+</ul>
+<h1 id="安全运维实例"><a class="markdownIt-Anchor" href="#安全运维实例"></a> 安全运维实例</h1>
+<h2 id="实例一"><a class="markdownIt-Anchor" href="#实例一"></a> 实例一</h2>
+<h3 id="设备硬件故障"><a class="markdownIt-Anchor" href="#设备硬件故障"></a> 设备硬件故障</h3>
+<ul>
+<li>问题描述
+<ul>
+<li>ESPC显示XXIDS设备不在线</li>
+</ul>
+</li>
+<li>诊断过程
+<ul>
+<li>找到可直连该设备的终端，ping该设备并尝试使用网页登陆该设备，发现无法ping通，且登录不了设备网页界面。联系网络运维人员确认不是他们变更导致，初步确认设备连接问题或设备故障</li>
+</ul>
+</li>
+<li>汇报情况
+<ul>
+<li>将设备无法监控且不能连接的情况电话告知部门负责人（发现时间、故障现象描述、分析判断），并根据应急预案提供处理建议，（设备不在线且无法连接的问题需要行内人员进机房进行查看设备状态，查看端口连接情况，必要时进行重启操作）</li>
+</ul>
+</li>
+<li>配合处理
+<ul>
+<li>配合相关人员进行设备验证，设备下架、配置导入、设备上架、更换等操作，完成设备故障特殊事件报告</li>
+</ul>
+</li>
+</ul>
+<h2 id="实例二"><a class="markdownIt-Anchor" href="#实例二"></a> 实例二</h2>
+<h3 id="设备配置问题"><a class="markdownIt-Anchor" href="#设备配置问题"></a> 设备配置问题</h3>
+<ul>
+<li>
+<p>问题描述</p>
+<ul>
+<li>头天变更，设备重启，交接班时发现ADS-M设备显示设备状态正常，登陆单台ADS显示BGP（邻居）状态正常，当前服务为空</li>
+</ul>
+</li>
+<li>
+<p>诊断过程</p>
+<ul>
+<li>查看NTA设备，发现路由状态异常（红色），其他服务正常。根据经验判断该问题是因为重启后路由没有得到释放，无法连接</li>
+</ul>
+</li>
+<li>
+<p>汇报情况</p>
+<ul>
+<li>根据应急预案内容，自行删除路由，再添加路由。暂不汇报</li>
+</ul>
+</li>
+<li>
+<p>配合处理</p>
+<ul>
+<li>自主删除路由后再添加路由（最好复制，但注意空白字符），等待2分钟后，设备服务状态正常</li>
+</ul>
+<p><strong>注</strong>：这类问题经常由于变更人员进行变更操作后只看设备是否能登录并在线监控，未检查联通性造成的。是否上报酌情处理</p>
+</li>
+</ul>
+<h2 id="实例三"><a class="markdownIt-Anchor" href="#实例三"></a> 实例三</h2>
+<h3 id="ids告警事件"><a class="markdownIt-Anchor" href="#ids告警事件"></a> <strong>IDS告警事件</strong></h3>
+<ul>
+<li>问题描述
+<ul>
+<li>IDS设备触发告警，告警量大（15秒出现1000条以上）</li>
+</ul>
+</li>
+<li>诊断过程
+<ul>
+<li>查看告警内容，发现是针对xx系统的扫描包含注入特征码（1=1/1=2/sleep/select等），查看外部渗透扫描申请表，确认不是已备案的渗透测试/扫描服务，属于外部攻击</li>
+</ul>
+</li>
+<li>汇报情况
+<ul>
+<li>根据应急预案内容，自行处理，暂不汇报，上交特殊事件报告就行。（经过地址反查如果是领导特别关心的源IP或目的IP根据指示汇报）</li>
+</ul>
+</li>
+<li>配合处理
+<ul>
+<li>根据应急预案内容，封禁该IP对本机的访问。封禁后告警停止。编写特殊事件报告。完成日志分析，抽取告警进行还原操作（HOST+URL+？+参数），确认是否存在问题。联系相关人员确认系统是否运行正常</li>
+</ul>
+</li>
+</ul>
+</div><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">z3lce</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://www.infore.top/2020/12/04/%E5%AE%89%E5%85%A8%E8%BF%90%E7%BB%B4/">http://www.infore.top/2020/12/04/安全运维/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://www.infore.top" target="_blank">z3lce学习记录</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%AE%89%E5%85%A8%E8%BF%90%E7%BB%B4/">安全运维</a></div><div class="post_share"><div class="social-share" data-image="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/20200719093802.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css"/><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js"></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2020/12/04/%E5%AE%89%E5%85%A8%E5%80%BC%E5%AE%88%E6%9C%8D%E5%8A%A1and%E6%97%A5%E5%BF%97%E5%88%86%E6%9E%90/"><img class="prev-cover" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/20200719094148.png" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">安全值守服务and日志分析</div></div></a></div><div class="next-post pull-right"><a href="/2020/12/04/%E5%AE%89%E5%85%A8%E5%8A%A0%E5%9B%BA/"><img class="next-cover" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/20200719093247.png" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">安全加固</div></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fas fa-thumbs-up fa-fw"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2020/12/04/安全值守服务and日志分析/" title="安全值守服务and日志分析"><img class="relatedPosts_cover" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/20200719094148.png"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fas fa-history fa-fw"></i> 2020-12-04</div><div class="relatedPosts_title">安全值守服务and日志分析</div></div></a></div></div></div></article></main><footer id="footer" data-type="color"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2021 By z3lce</div><div class="framework-info"><span>驱动 </span><a href="https://hexo.io" target="_blank" rel="noopener"><span>Hexo</span></a><span class="footer-separator">|</span><span>主题 </span><a href="https://github.com/jerryc127/hexo-theme-butterfly" target="_blank" rel="noopener"><span>Butterfly</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><button id="readmode" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="font_plus" title="放大字体"><i class="fas fa-plus"></i></button><button id="font_minus" title="缩小字体"><i class="fas fa-minus"></i></button><button class="translate_chn_to_cht" id="translateLink" title="简繁转换">繁</button><button id="darkmode" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button></div><div id="rightside-config-show"><button id="rightside_config" title="设置"><i class="fas fa-cog"></i></button><button class="close" id="mobile-toc-button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></section><div class="search-dialog" id="local-search"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>由</span> <a href="https://github.com/wzpan/hexo-generator-search" target="_blank" rel="noopener" style="color:#49B1F5;">hexo-generator-search</a>
+ <span>提供支持</span></div></div></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div class="search-mask"></div><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="https://cdn.jsdelivr.net/npm/animejs@latest/anime.min.js"></script><script src="/js/third-party/fireworks.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script defer id="ribbon" src="/js/third-party/canvas-ribbon.js" size="150" alpha="0.6" zIndex="-1" mobile="true" data-click="true"></script><script id="ribbon_piao" mobile="true" src="/js/third-party/piao.js"></script><script src="/js/third-party/activate-power-mode.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module" defer></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js" async></script><script src="/js/search/local-search.js"></script><script>var endLoading = function () {
+  document.body.style.overflow = 'auto';
+  document.getElementById('loading-box').classList.add("loaded")
+}
+window.addEventListener('load',endLoading)</script></body></html>

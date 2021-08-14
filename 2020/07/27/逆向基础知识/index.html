@@ -1,0 +1,186 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>逆向基础知识 | z3lce学习记录</title><meta name="description" content="逆向基础知识  局部变量 存放区域是栈，进入函数时分配，函数返回时释放。  全局变量 全局变量的地址在编译期间就会确定下来，一般以固定的地址访问全局变量。使用固定的硬编码地址直接对内存进行寻址。  数组 占用空间：sizeof（类型）*个数 数组寻址公式：数组首地址+sizeof（一维数组类型）x下标1+sizeof（数组类型） x下标2 一般会优化为编译器直接给出计算结果。  文本字符串  字"><meta name="keywords" content="basic"><meta name="author" content="z3lce"><meta name="copyright" content="z3lce"><meta name="format-detection" content="telephone=no"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://www.infore.top/2020/07/27/%E9%80%86%E5%90%91%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//fonts.googleapis.com" crossorigin="crossorigin"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><meta name="360-site-verification" content="{&quot;theme_color&quot;:{&quot;enable&quot;:true,&quot;main&quot;:&quot;#49B1F5&quot;,&quot;paginator&quot;:&quot;#00c4b6&quot;,&quot;button_hover&quot;:&quot;#FF7242&quot;,&quot;text_selection&quot;:&quot;#00c4b6&quot;,&quot;link_color&quot;:&quot;#99a9bf&quot;,&quot;meta_color&quot;:&quot;#858585&quot;,&quot;hr_color&quot;:&quot;#A4D8FA&quot;,&quot;code_foreground&quot;:&quot;#F47466&quot;,&quot;code_background&quot;:&quot;rgba(27, 31, 35, .05)&quot;,&quot;toc_color&quot;:&quot;#00c4b6&quot;,&quot;blockquote_padding_color&quot;:&quot;#49b1f5&quot;,&quot;blockquote_background_color&quot;:&quot;#49b1f5&quot;}}"/><meta property="og:type" content="article"><meta property="og:title" content="逆向基础知识"><meta property="og:url" content="http://www.infore.top/2020/07/27/%E9%80%86%E5%90%91%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/"><meta property="og:site_name" content="z3lce学习记录"><meta property="og:description" content="逆向基础知识  局部变量 存放区域是栈，进入函数时分配，函数返回时释放。  全局变量 全局变量的地址在编译期间就会确定下来，一般以固定的地址访问全局变量。使用固定的硬编码地址直接对内存进行寻址。  数组 占用空间：sizeof（类型）*个数 数组寻址公式：数组首地址+sizeof（一维数组类型）x下标1+sizeof（数组类型） x下标2 一般会优化为编译器直接给出计算结果。  文本字符串  字"><meta property="og:image" content="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/20200719093603.png"><meta property="article:published_time" content="2020-07-27T15:09:08.000Z"><meta property="article:modified_time" content="2020-07-27T15:09:08.000Z"><meta name="twitter:card" content="summary"><script>var activateDarkMode = function () {
+  document.documentElement.setAttribute('data-theme', 'dark')
+  if (document.querySelector('meta[name="theme-color"]') !== null) {
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', '#000')
+  }
+}
+var activateLightMode = function () {
+  document.documentElement.setAttribute('data-theme', 'light')
+  if (document.querySelector('meta[name="theme-color"]') !== null) {
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', '#fff')
+  }
+}
+
+var getCookies = function (name) {
+  const value = `; ${document.cookie}`
+  const parts = value.split(`; ${name}=`)
+  if (parts.length === 2) return parts.pop().split(';').shift()
+}
+
+var autoChangeMode = 'false'
+var t = getCookies('theme')
+if (autoChangeMode === '1') {
+  var isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+  var isLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
+  var isNotSpecified = window.matchMedia('(prefers-color-scheme: no-preference)').matches
+  var hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified
+
+  if (t === undefined) {
+    if (isLightMode) activateLightMode()
+    else if (isDarkMode) activateDarkMode()
+    else if (isNotSpecified || hasNoSupport) {
+      console.log('You specified no preference for a color scheme or your browser does not support it. I Schedule dark mode during night time.')
+      var now = new Date()
+      var hour = now.getHours()
+      var isNight = hour <= 6 || hour >= 18
+      isNight ? activateDarkMode() : activateLightMode()
+    }
+    window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+      if (Cookies.get('theme') === undefined) {
+        e.matches ? activateDarkMode() : activateLightMode()
+      }
+    })
+  } else if (t === 'light') activateLightMode()
+  else activateDarkMode()
+} else if (autoChangeMode === '2') {
+  now = new Date()
+  hour = now.getHours()
+  isNight = hour <= 6 || hour >= 18
+  if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+  else if (t === 'light') activateLightMode()
+  else activateDarkMode()
+} else {
+  if (t === 'dark') activateDarkMode()
+  else if (t === 'light') activateLightMode()
+}</script><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css"><link rel="prev" title="计算机基础" href="http://www.infore.top/2020/07/27/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><link rel="next" title="web学习笔记" href="http://www.infore.top/2020/07/20/web%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web&amp;display=swap"><script>var GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容:${query}"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  bookmark: {
+    message_prev: '按',
+    message_next: '键将本页加入书签'
+  },
+  runtime_unit: '天',
+  runtime: true,
+  copyright: {"languages":{"author":"作者: z3lce","link":"链接: ","source":"来源: z3lce学习记录","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  ClickShowText: undefined,
+  medium_zoom: false,
+  fancybox: true,
+  Snackbar: {"bookmark":{"message_prev":"按","message_next":"键将本页加入书签"},"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#121212","position":"bottom-left"},
+  justifiedGallery: {
+    js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+    css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+  },
+  baiduPush: false,
+  highlightCopy: true,
+  highlightLang: true,
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isanchor: false    
+}</script><script>var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isSidebar: true
+  }</script><noscript><style>
+#nav {
+  opacity: 1
+}
+.justified-gallery img{
+  opacity: 1
+}
+</style></noscript><link rel="stylesheet" href="/css/background.css"><meta name="generator" content="Hexo 4.2.1"></head><body><script type="text/javascript" src="/js/crash_cheat.js"></script><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><canvas class="fireworks"></canvas><div id="mobile-sidebar"><div id="menu_mask"></div><div id="mobile-sidebar-menus"><div class="mobile_author_icon"><img class="avatar-img" src="/img/avatar.gif" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="mobile_post_data"><div class="mobile_data_item is-center"><div class="mobile_data_link"><a href="/archives/"><div class="headline">文章</div><div class="length_num">14</div></a></div></div><div class="mobile_data_item is-center">      <div class="mobile_data_link"><a href="/tags/"><div class="headline">标签</div><div class="length_num">12</div></a></div></div><div class="mobile_data_item is-center">     <div class="mobile_data_link"><a href="/categories/"><div class="headline">分类</div><div class="length_num">10</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div></div></div><i class="fas fa-arrow-right on" id="toggle-sidebar"></i><div id="sidebar"><div class="sidebar-toc"><div class="sidebar-toc__title">目录</div><div class="sidebar-toc__progress"><span class="progress-notice">你已经读了</span><span class="progress-num">0</span><span class="progress-percentage">%</span><div class="sidebar-toc__progress-bar">     </div></div><div class="sidebar-toc__content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#逆向基础知识"><span class="toc-number">1.</span> <span class="toc-text"> 逆向基础知识</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#局部变量"><span class="toc-number">1.1.</span> <span class="toc-text"> 局部变量</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#全局变量"><span class="toc-number">1.2.</span> <span class="toc-text"> 全局变量</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#数组"><span class="toc-number">1.3.</span> <span class="toc-text"> 数组</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#文本字符串"><span class="toc-number">1.4.</span> <span class="toc-text"> 文本字符串</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#字符串存储格式"><span class="toc-number">1.4.1.</span> <span class="toc-text"> 字符串存储格式</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#c字符串"><span class="toc-number">1.4.1.1.</span> <span class="toc-text"> c字符串</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#dos字符串"><span class="toc-number">1.4.1.2.</span> <span class="toc-text"> dos字符串</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#pascal字符串"><span class="toc-number">1.4.1.3.</span> <span class="toc-text"> Pascal字符串</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#dephi字符串"><span class="toc-number">1.4.1.4.</span> <span class="toc-text"> dephi字符串</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#计算字符串长度"><span class="toc-number">1.4.2.</span> <span class="toc-text"> 计算字符串长度</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#使用纯算法实现逻辑判断"><span class="toc-number">1.5.</span> <span class="toc-text"> 使用纯算法实现逻辑判断</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#加减法"><span class="toc-number">1.6.</span> <span class="toc-text"> 加减法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#整数加减法"><span class="toc-number">1.6.1.</span> <span class="toc-text"> 整数加减法</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#乘法"><span class="toc-number">1.7.</span> <span class="toc-text"> 乘法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#整数乘法"><span class="toc-number">1.7.1.</span> <span class="toc-text"> 整数乘法</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#除法"><span class="toc-number">1.8.</span> <span class="toc-text"> 除法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#整数除法"><span class="toc-number">1.8.1.</span> <span class="toc-text"> 整数除法</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#有符号除法除数为2的n次幂"><span class="toc-number">1.8.1.1.</span> <span class="toc-text"> 有符号除法，除数为2的n次幂</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#有符号除法除数为-2n"><span class="toc-number">1.8.1.2.</span> <span class="toc-text"> 有符号除法，除数为-2ⁿ</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#有符号除法除数为正非2n"><span class="toc-number">1.8.1.3.</span> <span class="toc-text"> 有符号除法，除数为正非2ⁿ</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#有符号除法除数负非2n"><span class="toc-number">1.8.1.4.</span> <span class="toc-text"> 有符号除法，除数负非2ⁿ</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#无符号除法除数非2n"><span class="toc-number">1.8.1.5.</span> <span class="toc-text"> 无符号除法，除数非2ⁿ</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#整数取模"><span class="toc-number">1.9.</span> <span class="toc-text"> 整数取模</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#除数为2n"><span class="toc-number">1.9.1.</span> <span class="toc-text"> 除数为2ⁿ</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#除数非2n"><span class="toc-number">1.9.2.</span> <span class="toc-text"> 除数非2ⁿ</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#控制语句"><span class="toc-number">1.10.</span> <span class="toc-text"> 控制语句</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#if-then-else"><span class="toc-number">1.10.1.</span> <span class="toc-text"> if-then-else</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#switch-case"><span class="toc-number">1.10.2.</span> <span class="toc-text"> switch-case</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#循环语句"><span class="toc-number">1.10.3.</span> <span class="toc-text"> 循环语句</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#for语句"><span class="toc-number">1.10.3.1.</span> <span class="toc-text"> for语句</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#while语句"><span class="toc-number">1.10.3.2.</span> <span class="toc-text"> while语句</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#do循环语句"><span class="toc-number">1.10.4.</span> <span class="toc-text"> do循环语句</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#虚函数"><span class="toc-number">1.11.</span> <span class="toc-text"> 虚函数</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#继承虚表"><span class="toc-number">1.11.1.</span> <span class="toc-text"> 继承虚表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#菱形继承虚表"><span class="toc-number">1.11.2.</span> <span class="toc-text"> 菱形继承虚表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#抽象类虚表"><span class="toc-number">1.11.3.</span> <span class="toc-text"> 抽象类虚表</span></a></li></ol></li></ol></li></ol></div></div></div><div id="body-wrap"><div id="web_bg" data-type="color"></div><header class="post-bg" id="page-header" style="background-image: url(https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/20200719093603.png)"><nav id="nav"><span class="pull-left" id="blog_name"><a class="blog_title" id="site-name" href="/">z3lce学习记录</a></span><span class="pull-right menus"><div id="search_button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于我</span></a></div></div><span class="toggle-menu close"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></span></span></nav><div id="post-info"><div id="post-title"><div class="posttitle">逆向基础知识</div></div><div id="post-meta"><div class="meta-firstline"><time class="post-meta__date"><span class="post-meta__date-created" title="发表于 2020-07-27 23:09:08"><i class="far fa-calendar-alt fa-fw"></i> 发表于 2020-07-27</span><span class="post-meta__separator">|</span><span class="post-meta__date-updated" title="更新于 2020-07-27 23:09:08"><i class="fas fa-history fa-fw"></i> 更新于 2020-07-27</span></time><span class="post-meta__categories"><span class="post-meta__separator">|</span><i class="fas fa-inbox fa-fw post-meta__icon"></i><a class="post-meta__categories" href="/categories/reverse/">reverse</a></span></div><div class="meta-secondline"> <span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta__icon"></i><span>字数总计:</span><span class="word-count">2.2k</span><span class="post-meta__separator">|</span><i class="far fa-clock fa-fw post-meta__icon"></i><span>阅读时长: 7 分钟</span></span></div><div class="meta-thirdline"><span class="post-meta-pv-cv"><span class="post-meta__separator">|</span><i class="far fa-eye fa-fw post-meta__icon"></i><span>阅读量:</span><span id="busuanzi_value_page_pv"></span></span><span class="post-meta-commentcount"></span></div></div></div></header><main class="layout_post" id="content-inner"><article id="post"><div class="post-content" id="article-container"><h1 id="逆向基础知识"><a class="markdownIt-Anchor" href="#逆向基础知识"></a> 逆向基础知识</h1>
+<h2 id="局部变量"><a class="markdownIt-Anchor" href="#局部变量"></a> 局部变量</h2>
+<p>存放区域是栈，进入函数时分配，函数返回时释放。</p>
+<h2 id="全局变量"><a class="markdownIt-Anchor" href="#全局变量"></a> 全局变量</h2>
+<p>全局变量的地址在编译期间就会确定下来，一般以固定的地址访问全局变量。使用固定的硬编码地址直接对内存进行寻址。</p>
+<h2 id="数组"><a class="markdownIt-Anchor" href="#数组"></a> 数组</h2>
+<p>占用空间：sizeof（类型）*个数</p>
+<p>数组寻址公式：数组首地址+sizeof（一维数组类型）x下标1+sizeof（数组类型） x下标2</p>
+<p>一般会优化为编译器直接给出计算结果。</p>
+<h2 id="文本字符串"><a class="markdownIt-Anchor" href="#文本字符串"></a> 文本字符串</h2>
+<h3 id="字符串存储格式"><a class="markdownIt-Anchor" href="#字符串存储格式"></a> 字符串存储格式</h3>
+<h4 id="c字符串"><a class="markdownIt-Anchor" href="#c字符串"></a> c字符串</h4>
+<p>\0作为结束标识</p>
+<h4 id="dos字符串"><a class="markdownIt-Anchor" href="#dos字符串"></a> dos字符串</h4>
+<p>行以$作为终止字符</p>
+<h4 id="pascal字符串"><a class="markdownIt-Anchor" href="#pascal字符串"></a> Pascal字符串</h4>
+<p>没有终止字符，但在开头第一个字节写明长度</p>
+<h4 id="dephi字符串"><a class="markdownIt-Anchor" href="#dephi字符串"></a> dephi字符串</h4>
+<p>双字节dephi：开头双字节</p>
+<p>四字节dephi：长度字段拓展为4字节</p>
+<h3 id="计算字符串长度"><a class="markdownIt-Anchor" href="#计算字符串长度"></a> 计算字符串长度</h3>
+<figure class="highlight plain"><table><tr><td class="code"><pre><code class="hljs assembly">MOV ECX, FFFFFFFF<br>SUB EAX, EAX<br>REPNZ<br>SCASB           ;把al内容和edi指向的附加段中的数据逐一进行比较<br>NOT ECX<br>DEC ECX<br>JE XXXXXX<br></code></pre></td></tr></table></figure>
+<h2 id="使用纯算法实现逻辑判断"><a class="markdownIt-Anchor" href="#使用纯算法实现逻辑判断"></a> 使用纯算法实现逻辑判断</h2>
+<p>利用cf标识位进行逻辑判断，例如使用neg检验eax是否为0，结果放在cf中，sbb eax，eax结果由cf决定，当cf为1的时候，eax为-1，否则为0.（主要知道这是逻辑判断优化的结果，就不难还原）</p>
+<h2 id="加减法"><a class="markdownIt-Anchor" href="#加减法"></a> 加减法</h2>
+<h3 id="整数加减法"><a class="markdownIt-Anchor" href="#整数加减法"></a> 整数加减法</h3>
+<p>add或adc、lea f，[a+b+8]；sbb或sub，~；存在常量折叠的情况。</p>
+<h2 id="乘法"><a class="markdownIt-Anchor" href="#乘法"></a> 乘法</h2>
+<h3 id="整数乘法"><a class="markdownIt-Anchor" href="#整数乘法"></a> 整数乘法</h3>
+<p>mul、imul运算比较慢，优化后一般对2的幂使用shl，非5的倍数可以写成lea eax，[eax+4*eax]    lea指令可以实现寄存器乘以2、4或8的运算</p>
+<h2 id="除法"><a class="markdownIt-Anchor" href="#除法"></a> 除法</h2>
+<p>div、idiv除法运算大概比乘法多消耗10倍的cpu时钟周期，被除数如果是一个未知数，编译器还是会使用div。</p>
+<h3 id="整数除法"><a class="markdownIt-Anchor" href="#整数除法"></a> 整数除法</h3>
+<p>如果是2的幂，会无符号使用shr，有符号使用sar；会根据一定算法使用乘法代替除法；除法指令需要使用符号拓展指令cdq，其作用是把eax寄存器中的数字视作有符号的数字，将其符号位拓展到edx寄存器中，若eax最高位是1，则edx=FFFFFFFFh，若eax最高位为0，则执行后edx=00000000h。最常用的优化公式为倒数相乘。</p>
+<h4 id="有符号除法除数为2的n次幂"><a class="markdownIt-Anchor" href="#有符号除法除数为2的n次幂"></a> 有符号除法，除数为2的n次幂</h4>
+<p>位移优化：x大于等于0，则x&gt;&gt;n;x小于0，（x+(2ⁿ -1)）&gt;&gt;n;</p>
+<h4 id="有符号除法除数为-2n"><a class="markdownIt-Anchor" href="#有符号除法除数为-2n"></a> 有符号除法，除数为-2ⁿ</h4>
+<p>x大于等于0，-（x&gt;&gt;n）;x&lt;0,-((x+(2ⁿ-1))&gt;&gt;n)</p>
+<h4 id="有符号除法除数为正非2n"><a class="markdownIt-Anchor" href="#有符号除法除数为正非2n"></a> 有符号除法，除数为正非2ⁿ</h4>
+<p>32位：x大于等于0，x*c&gt;&gt;32&gt;&gt;n((x*c&gt;&gt;32)+x&gt;&gt;n)，x小于0，（x*c&gt;&gt;32&gt;&gt;n)+1（((x*c&gt;&gt;32)+x&gt;&gt;n）+1)</p>
+<p>64位：x大于等于0，x*c&gt;&gt;64&gt;&gt;n((x*c&gt;&gt;64)+x&gt;&gt;n)，x小于0，（x*c&gt;&gt;64&gt;&gt;n)+1	(((x*c&gt;&gt;64)+x&gt;&gt;n)+1)</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><code class="hljs assembly">64位除法<br>mov rax, xxxx<br>cqo<br>and edx, num1<br>add rdx, rax<br>sar rdx, num2<br>neg rdx<br></code></pre></td></tr></table></figure>
+<p>以上公式都可以使用2ⁿ/c=o,将除数计算出来。</p>
+<h4 id="有符号除法除数负非2n"><a class="markdownIt-Anchor" href="#有符号除法除数负非2n"></a> 有符号除法，除数负非2ⁿ</h4>
+<p>将上述+换为-即可。</p>
+<h4 id="无符号除法除数非2n"><a class="markdownIt-Anchor" href="#无符号除法除数非2n"></a> 无符号除法，除数非2ⁿ</h4>
+<p>32位：x*c&gt;&gt;32&gt;&gt;n	[(x-(x*c&gt;&gt;32)&gt;&gt;n₁)+((x*c&gt;&gt;32)&gt;&gt;n₂)]</p>
+<p>64位：x*c&gt;&gt;64&gt;&gt;n	[(x-(x*c&gt;&gt;64)&gt;&gt;n₁)+((x*c&gt;&gt;64)&gt;&gt;n₂)]</p>
+<h2 id="整数取模"><a class="markdownIt-Anchor" href="#整数取模"></a> 整数取模</h2>
+<h3 id="除数为2n"><a class="markdownIt-Anchor" href="#除数为2n"></a> 除数为2ⁿ</h3>
+<p>优化1：x大于等于0，x%2ⁿ=x&amp;(2ⁿ-1)， x小于0，(x&amp;(2ⁿ-1))-1|(~(2ⁿ-1))+1</p>
+<p>优化2：x大于等于0，x&amp;(2ⁿ-1)，x小于0，(x+(2ⁿ-1)&amp;(2ⁿ-1))-(2ⁿ-1)</p>
+<h3 id="除数非2n"><a class="markdownIt-Anchor" href="#除数非2n"></a> 除数非2ⁿ</h3>
+<p>编译器一般采用余数=被除数-商x除数的优化方式</p>
+<p>公式x%c=x-x/c*c</p>
+<h2 id="控制语句"><a class="markdownIt-Anchor" href="#控制语句"></a> 控制语句</h2>
+<h3 id="if-then-else"><a class="markdownIt-Anchor" href="#if-then-else"></a> if-then-else</h3>
+<p>通俗点说是，使用jnz之类的语句跳过条件成立（不成立）的语句，执行结束再跳走。</p>
+<h3 id="switch-case"><a class="markdownIt-Anchor" href="#switch-case"></a> switch-case</h3>
+<p>利用cmp与传入的数值相比，je之类进行跳转，执行结束jmp或call。jmp dword ptr[4*eax+004010b0]相当与switch（a）</p>
+<p>当case大于等于6时，且case值间距比较小时，编译器会采用case表的方式实现switch语句。思路是先把所有要跳转的case位置放置一个一维数组表（case表），将case的值作为数组的下标进行跳转。</p>
+<p>当case项数较多时，会按大于小于关系形成判断树。</p>
+<h3 id="循环语句"><a class="markdownIt-Anchor" href="#循环语句"></a> 循环语句</h3>
+<h4 id="for语句"><a class="markdownIt-Anchor" href="#for语句"></a> for语句</h4>
+<p>使用cmp、ecx寄存器和jle之类的指令进行判断是否跳出循环。</p>
+<p>特征：for循环也会出现向上跳转的情况。与while循环不同的是，在这里前面多了一个jmp。for循环的jxx需要取反。</p>
+<h4 id="while语句"><a class="markdownIt-Anchor" href="#while语句"></a> while语句</h4>
+<p>在循环中jxx判断是否满足条件，条件不为true，则跳出循环。</p>
+<h3 id="do循环语句"><a class="markdownIt-Anchor" href="#do循环语句"></a> do循环语句</h3>
+<p>在最后的结尾，形成判断跳转语句。特征：有一个jxx用于向上跳转，而且跳转不到start。</p>
+<h2 id="虚函数"><a class="markdownIt-Anchor" href="#虚函数"></a> 虚函数</h2>
+<p>虚函数时程序运行时定义的函数。虚函数的地址不能在编译的时候确定，只能在调用的时候确定。所有虚函数的引用都放在虚函数表(Virtual Table，VTBL)这个数组里，数组的每个元素存放的就是类中虚函数的地址，采用两次间接寻址的方式，即先取(Virtual Table Pointer，VPTR)，得到VTBL表的地址再从VTBL表中取出虚函数的地址。</p>
+<p>函数在入口处使用lea reg,off_xxxxxxxx和mov [reg],reg，返回值为this指针的，可以怀疑这个函数是构造函数。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><code class="hljs plain">虚函数特征总结：<br>如果一个类至少有一个虚函数，这个类就有一个指向虚表的指针<br>不同的类虚表不同，相同的类对象共享一个虚表<br>虚表指针存放在对象首地址处<br>虚表地址在全局数据区中<br>虚表的每个元素都指向一个类成员函数指针（8字节）<br>虚表不一定以0结尾<br>虚表的成员函数顺序，按照类声明的顺序排列<br>虚表在构造函数中会被初始化<br>虚表在析构函数中会被赋值<br></code></pre></td></tr></table></figure>
+<h3 id="继承虚表"><a class="markdownIt-Anchor" href="#继承虚表"></a> 继承虚表</h3>
+<figure class="highlight plain"><table><tr><td class="code"><pre><code class="hljs plain">构造函数：<br>调用虚基类构造函数（多个按照继承顺序调用）<br>调用普通基类构造函数（多个按照继承顺序调用）<br>调用对象成员函数的构造函数（多个按照定义顺序调用）<br>调用派生构造函数<br>析构函数：<br>调用派生构造函数<br>调用对象成员函数的构造函数（多个按照定义顺序调用）<br>调用普通基类构造函数（多个按照继承顺序调用）<br>调用虚基类构造函数（多个按照继承顺序调用）<br><br><br>多重继承与单重继承唯一区别：是派生类新增的虚函数挂在第一个虚表后面。<br>多重继承虚表的特点也可以作为判断依据。<br></code></pre></td></tr></table></figure>
+<h3 id="菱形继承虚表"><a class="markdownIt-Anchor" href="#菱形继承虚表"></a> 菱形继承虚表</h3>
+<figure class="highlight plain"><table><tr><td class="code"><pre><code class="hljs plain">菱形继承是指在多重继承中，两个子类继承同一个父类，又有子类同时继承者两个子类。解决方法：虚继承<br>特征识别：<br>发现构造函数多传了一个，就可以怀疑这个类层次带有虚继承<br>如果发现构造函数里有初始化虚基类偏移表的操作，就可以怀疑这个类继承层次带有虚继承<br><br><br>根据调用基类构造函数标志来决定是否要调用虚基类的构造函数，如果为1，表示要调用虚基类构造函数；<br>为了方便定位在派生类内存中只存在一份的虚基类对象的内存位置，做了一个虚基类偏移表；其共8字节，后4字节用于表示虚基类在当前虚基类偏移表中的偏移<br>虚基类偏移表也在全局数据区，但只要看里面的数据，就能与虚区表分开。<br></code></pre></td></tr></table></figure>
+<h3 id="抽象类虚表"><a class="markdownIt-Anchor" href="#抽象类虚表"></a> 抽象类虚表</h3>
+<figure class="highlight plain"><table><tr><td class="code"><pre><code class="hljs plain">带有纯虚函数的是抽象类，不能实例化对象。找到抽象类，可通过抽象类的构造函数就可以定位这个抽象类的所有子类，得到所有重要功能的代码。<br>父类为抽象类的实现代码和单重继承没有太大区别，唯一区别是虚表。<br>纯虚函数没有实现代码，编译器默认填充了_purecall函数的地址，其功能是显示一个错误并退出程序。<br>特征：如果发现一个类的虚表里有_purecall虚表项，就可以怀疑这个类是抽象类。<br></code></pre></td></tr></table></figure>
+</div><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">z3lce</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://www.infore.top/2020/07/27/%E9%80%86%E5%90%91%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86/">http://www.infore.top/2020/07/27/逆向基础知识/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://www.infore.top" target="_blank">z3lce学习记录</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/basic/">basic</a></div><div class="post_share"><div class="social-share" data-image="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/20200719093802.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css"/><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js"></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2020/07/27/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/"><img class="prev-cover" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/20200719093150.png" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">计算机基础</div></div></a></div><div class="next-post pull-right"><a href="/2020/07/20/web%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"><img class="next-cover" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/20200719093024.png" onerror="onerror=null;src='/img/404.jpg'"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">web学习笔记</div></div></a></div></nav><div class="relatedPosts"><div class="relatedPosts_headline"><i class="fas fa-thumbs-up fa-fw"></i><span> 相关推荐</span></div><div class="relatedPosts_list"><div class="relatedPosts_item"><a href="/2020/09/11/SMC介绍/" title="SMC介绍"><img class="relatedPosts_cover" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/20200719093454.png"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fas fa-history fa-fw"></i> 2020-09-11</div><div class="relatedPosts_title">SMC介绍</div></div></a></div><div class="relatedPosts_item"><a href="/2020/07/15/pwn/" title="pwn"><img class="relatedPosts_cover" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/20200719092909.png"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fas fa-history fa-fw"></i> 2020-07-15</div><div class="relatedPosts_title">pwn</div></div></a></div><div class="relatedPosts_item"><a href="/2020/07/20/web学习笔记/" title="web学习笔记"><img class="relatedPosts_cover" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/20200719093024.png"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fas fa-history fa-fw"></i> 2020-07-20</div><div class="relatedPosts_title">web学习笔记</div></div></a></div><div class="relatedPosts_item"><a href="/2020/07/27/计算机基础/" title="计算机基础"><img class="relatedPosts_cover" data-src="https://pdc246871-1302651496.cos.ap-nanjing.myqcloud.com/20200719093150.png"><div class="relatedPosts_main is-center"><div class="relatedPosts_date"><i class="fas fa-history fa-fw"></i> 2020-07-27</div><div class="relatedPosts_title">计算机基础</div></div></a></div></div></div></article></main><footer id="footer" data-type="color"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2021 By z3lce</div><div class="framework-info"><span>驱动 </span><a href="https://hexo.io" target="_blank" rel="noopener"><span>Hexo</span></a><span class="footer-separator">|</span><span>主题 </span><a href="https://github.com/jerryc127/hexo-theme-butterfly" target="_blank" rel="noopener"><span>Butterfly</span></a></div></div></footer></div><section class="rightside" id="rightside"><div id="rightside-config-hide"><button id="readmode" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="font_plus" title="放大字体"><i class="fas fa-plus"></i></button><button id="font_minus" title="缩小字体"><i class="fas fa-minus"></i></button><button class="translate_chn_to_cht" id="translateLink" title="简繁转换">繁</button><button id="darkmode" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button></div><div id="rightside-config-show"><button id="rightside_config" title="设置"><i class="fas fa-cog"></i></button><button class="close" id="mobile-toc-button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></section><div class="search-dialog" id="local-search"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"><div id="local-hits"></div><div id="local-stats"><div class="local-search-stats__hr" id="hr"><span>由</span> <a href="https://github.com/wzpan/hexo-generator-search" target="_blank" rel="noopener" style="color:#49B1F5;">hexo-generator-search</a>
+ <span>提供支持</span></div></div></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div class="search-mask"></div><script src="https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js"></script><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js"></script><script src="https://cdn.jsdelivr.net/npm/animejs@latest/anime.min.js"></script><script src="/js/third-party/fireworks.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script defer id="ribbon" src="/js/third-party/canvas-ribbon.js" size="150" alpha="0.6" zIndex="-1" mobile="true" data-click="true"></script><script id="ribbon_piao" mobile="true" src="/js/third-party/piao.js"></script><script src="/js/third-party/activate-power-mode.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+document.body.addEventListener('input', POWERMODE);
+</script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module" defer></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js" async></script><script src="/js/search/local-search.js"></script><script>var endLoading = function () {
+  document.body.style.overflow = 'auto';
+  document.getElementById('loading-box').classList.add("loaded")
+}
+window.addEventListener('load',endLoading)</script></body></html>
